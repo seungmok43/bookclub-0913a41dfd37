@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 610" width="400" height="610" role="img" aria-label="믿음을 행동으로 — PAI">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2C3A34"/>
+      <stop offset="1" stop-color="#16211D"/>
+    </linearGradient>
+    <linearGradient id="sweep" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#D9A441" stop-opacity="0"/>
+      <stop offset=".55" stop-color="#D9A441" stop-opacity=".95"/>
+      <stop offset="1" stop-color="#D9A441" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="400" height="610" fill="url(#bg)"/>
+
+  <!-- 감지: 동심 호 (센서가 퍼져 나가는 신호) -->
+  <g fill="none" stroke="#D9A441" stroke-linecap="round">
+    <path d="M126 214 a56 56 0 0 1 78 0"   stroke-opacity=".22" stroke-width="2.4"/>
+    <path d="M112 196 a80 80 0 0 1 106 0"  stroke-opacity=".15" stroke-width="2.4"/>
+    <path d="M98 178  a104 104 0 0 1 134 0" stroke-opacity=".09" stroke-width="2.4"/>
+  </g>
+  <!-- 기도의 점 — 감지의 출발 -->
+  <circle cx="165" cy="238" r="7" fill="#D9A441"/>
+
+  <!-- 행동: 점에서 뻗는 획 -->
+  <path d="M165 238 L292 238" stroke="#D9A441" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M276 226 L294 238 L276 250" fill="none" stroke="#D9A441" stroke-width="2.6"
+        stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- 제목 -->
+  <text x="46" y="352" font-family="Georgia, 'Times New Roman', serif" font-size="96"
+        font-weight="700" fill="#F3EEE4" letter-spacing="6">PAI</text>
+  <rect x="48" y="376" width="72" height="3" fill="url(#sweep)"/>
+
+  <text x="48" y="428" font-family="AppleMyungjo, 'Nanum Myeongjo', Georgia, serif"
+        font-size="34" fill="#F3EEE4">믿음을</text>
+  <text x="48" y="470" font-family="AppleMyungjo, 'Nanum Myeongjo', Georgia, serif"
+        font-size="34" fill="#F3EEE4">행동으로</text>
+
+  <text x="48" y="516" font-family="'Apple SD Gothic Neo', sans-serif" font-size="15"
+        fill="#9FB3A8" letter-spacing="1">Practice · Acting · In Christ</text>
+
+  <line x1="48" y1="544" x2="352" y2="544" stroke="#3E5049" stroke-width="1"/>
+  <text x="48" y="572" font-family="'Apple SD Gothic Neo', sans-serif" font-size="13"
+        fill="#7E948A" letter-spacing="1.5">초대손님과의 나눔 · 2026.08.07</text>
+</svg>
