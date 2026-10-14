@@ -134,3 +134,9 @@ select.sel{width:100%;padding:10px 12px;border:1px solid var(--line);border-radi
 .own{display:flex;gap:12px;margin-top:8px}
 .lnk{background:none;border:0;padding:0;color:var(--garnet);font-size:.82rem;cursor:pointer;text-decoration:underline}
 .meta .lnk{margin-left:auto}
+.or{display:flex;align-items:center;gap:12px;margin:26px 0 14px;color:var(--mute);font-size:.9rem;font-weight:700}
+.or::before,.or::after{content:"";flex:1;border-top:1px solid var(--line)}
+.card.join{background:color-mix(in srgb,var(--garnet) 7%,var(--card));border:1.5px dashed color-mix(in srgb,var(--garnet) 55%,var(--line))}
+.join-head{display:grid;gap:2px;margin-bottom:4px}
+.join-head b{font-size:1.02rem;color:var(--garnet)}
+.join-head span{font-size:.82rem;color:var(--mute);font-weight:400}

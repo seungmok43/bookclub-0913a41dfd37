@@ -651,15 +651,16 @@
     });
     root.appendChild(h('div', { class: 'card' }, lf));
 
-    root.appendChild(h('h2', { class: 'h2 sec' }, '처음이신가요?', h('small', null, '한 번만 가입하면 됩니다')));
+    root.appendChild(h('div', { class: 'or' }, h('span', null, '처음이신가요?')));
     var club = lget(CLUB_KEY) || '';
     var rc = h('input', { type: 'text', name: 'club-code', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', style: '-webkit-text-security:disc' });
     var rcl = lab('입장 코드', '모임에서 받은 코드', rc); rcl.hidden = !!club;
     var rn = h('input', { type: 'text', name: 'username', autocomplete: 'username', maxlength: String(NAME_MAX), placeholder: '예: 김집사, 들꽃' });
     var rp = pwInput('new-password'), rp2 = pwInput('new-password');
     var rm = h('div', { class: 'msg', role: 'status' });
-    var rb = h('button', { class: 'btn', type: 'submit' }, '가입하기');
-    var rf = h('form', { class: 'fm', novalidate: true }, rcl,
+    var rb = h('button', { class: 'btn ghost', type: 'submit' }, '가입하기');
+    var rf = h('form', { class: 'fm', novalidate: true },
+      h('div', { class: 'join-head' }, h('b', null, '새로 가입하기'), h('span', null, '처음 한 번만 하면 됩니다. 다음부터는 위에서 로그인하세요.')), rcl,
       lab('이름 또는 별명', '서평과 나눔에 이 이름이 보입니다. 20자까지, 다른 멤버와 겹치지 않게.', rn),
       lab('비밀번호', '4자 이상. 잊으면 모임 리더에게 말씀해 주세요.', rp), lab('비밀번호 한 번 더', null, rp2),
       h('div', { class: 'row' }, rm, rb));
@@ -679,7 +680,7 @@
         });
       }, function (res) { if (!rcl.hidden) lset(CLUB_KEY, code); finish(res); });
     });
-    root.appendChild(h('div', { class: 'card' }, rf));
+    root.appendChild(h('div', { class: 'card join' }, rf));
   }
 
   function viewResources(root) {
@@ -715,7 +716,7 @@
     });
     var root = $('view');
     root.textContent = '';
-    var tab = 'home';
+    var tab = parts[0] === 'account' ? '' : 'home';
     if (parts[0] === 'library' || parts[0] === 'book') tab = 'library';
     else if (parts[0] === 'share' || parts[0] === 'post') tab = 'share';
     else if (parts[0] === 'resources') tab = 'resources';
