@@ -11,8 +11,8 @@ window.BOOKLOVE_CONFIG = {
   siteName: 'BooKLove',
   tagline: '책으로 삶을 읽다',
 
-  supabaseUrl: '',
-  supabaseAnonKey: '',
+  supabaseUrl: 'https://jbognvabwtikanwqiajo.supabase.co',
+  supabaseAnonKey: 'sb_publishable_qYq0ARsXYfCv4KHB0DLXJQ_dSOo7u8-',
 
   // 지금 읽는 책 / 다음 모임 — edit these lines when the club moves on.
   // slug must match a book folder name (e.g. 'waste'). example: true shows an 「예시」 badge.
