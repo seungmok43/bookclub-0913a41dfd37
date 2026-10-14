@@ -36,7 +36,9 @@ const KEY='blk_v1';
 async function open_(raw){
   const k=await crypto.subtle.importKey('raw',raw,'AES-GCM',false,['decrypt']);
   const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:dec(D.iv)},k,dec(D.ct));
-  const html=new TextDecoder().decode(pt);
+  let html=new TextDecoder().decode(pt);
+  const nav='<div style="height:72px"></div><a href="community/" style="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));z-index:999;background:#8C2F39;color:#fff;text-decoration:none;font:700 14px/1 \'Apple SD Gothic Neo\',-apple-system,system-ui,sans-serif;padding:13px 20px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.18);white-space:nowrap">서재 · 서평 · 나눔</a>';
+  html=/<\/body>/i.test(html)?html.replace(/<\/body>/i,nav+'</body>'):html+nav;
   document.open();document.write(html);document.close();
 }
 async function unlock(pw){

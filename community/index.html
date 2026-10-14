@@ -1,0 +1,41 @@
+<!doctype html><html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#8C2F39">
+<title>BooKLove 모임 공간</title>
+<link rel="stylesheet" href="style.css">
+</head><body>
+<!-- Gate: same password and same session key as the hub (../index.html). -->
+<div id="gate" class="gate" hidden>
+  <div class="gbox">
+    <div class="eyebrow">BOOKLOVE</div>
+    <h1>책으로 삶을 읽다</h1>
+    <p class="d">북클럽 멤버 전용입니다.<br>암호를 입력해 주세요.</p>
+    <input id="gp" type="password" autocomplete="current-password" placeholder="암호">
+    <button id="gb" type="button">열기</button>
+    <div class="gmsg" id="gm" role="status"></div>
+  </div>
+</div>
+
+<div id="app" hidden>
+  <header class="top">
+    <div class="topin">
+      <a class="brand" href="#/"><span class="eyebrow">BOOKLOVE</span><span class="bt">모임 공간</span></a>
+      <a class="hub" href="../">허브로</a>
+    </div>
+    <nav class="tabs" aria-label="메뉴">
+      <a href="#/" data-tab="home">홈</a>
+      <a href="#/library" data-tab="library">서재</a>
+      <a href="#/share" data-tab="share">나눔</a>
+      <a href="#/resources" data-tab="resources">자료실</a>
+    </nav>
+  </header>
+  <div id="modebar" class="modebar" hidden></div>
+  <main id="view" class="wrap" tabindex="-1"></main>
+  <footer class="foot wrap">BooKLove · 이름 없이 남기는 서평과 나눔</footer>
+</div>
+
+<script src="config.js"></script>
+<script src="catalog.js"></script>
+<script src="app.js"></script>
+</body></html>

@@ -1,0 +1,128 @@
+:root{--bg:#EDEAE1;--card:#FBF9F3;--ink:#211F1B;--mute:#6D685D;--line:#D8D2C5;--garnet:#8C2F39;
+ --soft:#F3ECE0;--star:#B8862F;--ok:#2F6F5A}
+@media(prefers-color-scheme:dark){:root{--bg:#14161A;--card:#1B1E24;--ink:#E9E6DF;--mute:#98A1AE;--line:#2A2F38;
+ --garnet:#CC7A7A;--soft:#22262E;--star:#D9B061;--ok:#7FC2A8}}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);min-height:100vh;line-height:1.6;word-break:keep-all;overflow-wrap:break-word;
+ font-family:'Apple SD Gothic Neo',-apple-system,system-ui,'Malgun Gothic',sans-serif;overflow-x:hidden}
+[hidden]{display:none!important}
+a{color:inherit}
+button,input,textarea,select{font:inherit;color:inherit}
+.serif{font-family:'Nanum Myeongjo',Georgia,serif}
+.eyebrow{font-size:11px;letter-spacing:.28em;color:var(--garnet);font-weight:800}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px}
+
+/* gate (same look as the hub gate) */
+.gate{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+.gbox{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:34px 26px;max-width:380px;width:100%;text-align:center}
+.gbox h1{font-family:'Nanum Myeongjo',Georgia,serif;font-size:1.7rem;margin:12px 0 6px}
+.gbox .d{color:var(--mute);font-size:.88rem;margin-bottom:20px}
+.gbox input{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:16px;text-align:center;margin-bottom:10px}
+.gbox button{width:100%}
+.gmsg{margin-top:12px;font-size:.85rem;color:var(--garnet);min-height:1.2em}
+
+/* header */
+.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+.topin{max-width:860px;margin:0 auto;padding:12px 16px 6px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{text-decoration:none;display:flex;flex-direction:column;line-height:1.25}
+.brand .bt{font-family:'Nanum Myeongjo',Georgia,serif;font-weight:800;font-size:1.15rem}
+.hub{font-size:.82rem;color:var(--mute);text-decoration:none;border:1px solid var(--line);border-radius:20px;padding:5px 12px;background:var(--card)}
+.tabs{max-width:860px;margin:0 auto;padding:0 8px;display:grid;grid-template-columns:repeat(4,1fr)}
+.tabs a{text-align:center;text-decoration:none;padding:9px 0 10px;font-size:.95rem;color:var(--mute);border-bottom:2px solid transparent}
+.tabs a.on{color:var(--garnet);font-weight:800;border-bottom-color:var(--garnet)}
+.modebar{max-width:860px;margin:10px auto 0;padding:0 16px}
+.modebar div{background:var(--soft);border:1px dashed var(--line);border-radius:10px;padding:8px 12px;font-size:.82rem;color:var(--mute)}
+main{padding-top:18px;padding-bottom:28px;outline:none}
+.foot{color:var(--mute);font-size:.78rem;text-align:center;padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+
+/* blocks */
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.sec{margin-top:26px}
+.sec>h2,.h2{font-size:1.05rem;font-weight:800;margin-bottom:10px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.h2 small,.sec>h2 small{font-weight:500;color:var(--mute);font-size:.8rem}
+.lead{color:var(--mute);font-size:.9rem;margin-bottom:12px}
+.muted{color:var(--mute)}
+.small{font-size:.82rem}
+.badge{display:inline-block;font-size:.7rem;font-weight:800;color:var(--garnet);border:1px solid var(--garnet);border-radius:20px;padding:0 8px;line-height:1.6;vertical-align:middle}
+.btn{display:inline-block;border:0;border-radius:10px;background:var(--garnet);color:#fff;font-weight:700;padding:11px 16px;font-size:.95rem;cursor:pointer;text-decoration:none;text-align:center}
+.btn.ghost{background:transparent;color:var(--garnet);border:1px solid var(--garnet)}
+.btn:disabled{opacity:.5}
+.back{display:inline-block;font-size:.85rem;color:var(--mute);text-decoration:none;margin-bottom:12px}
+.empty{color:var(--mute);font-size:.9rem;padding:14px;text-align:center;border:1px dashed var(--line);border-radius:12px}
+
+/* current book */
+.now{display:grid;grid-template-columns:92px 1fr;gap:14px;align-items:start}
+.now img,.now .ph{width:92px;aspect-ratio:2/3;border-radius:6px}
+.now .lbl{font-size:.75rem;font-weight:800;color:var(--garnet);letter-spacing:.06em}
+.now h2{font-family:'Nanum Myeongjo',Georgia,serif;font-size:1.2rem;line-height:1.35;margin:2px 0}
+.now dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:.86rem;margin-top:8px}
+.now dt{color:var(--mute)}
+.now .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.now .acts .btn{padding:8px 12px;font-size:.85rem}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.quick a{text-decoration:none;display:block}
+.quick b{display:block;font-size:1rem}
+.quick span{font-size:.8rem;color:var(--mute)}
+
+/* covers */
+img.cv,.ph{display:block;width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:6px;background:var(--soft);border:1px solid var(--line)}
+.ph{display:grid;place-items:center;color:var(--mute);font-size:.75rem;text-align:center;padding:6px}
+
+/* library */
+.search{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:var(--card);font-size:16px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px 12px}
+.bk{text-decoration:none;display:block}
+.bk .t{font-weight:700;font-size:.92rem;line-height:1.35;margin-top:8px}
+.bk .a{font-size:.78rem;color:var(--mute)}
+.bk .m{font-size:.76rem;color:var(--mute);margin-top:2px}
+.stars{color:var(--star);letter-spacing:1px;white-space:nowrap}
+
+/* book detail */
+.bhead{display:grid;grid-template-columns:110px 1fr;gap:16px;align-items:start}
+.bhead h1{font-family:'Nanum Myeongjo',Georgia,serif;font-size:1.35rem;line-height:1.35}
+.bhead .a{color:var(--mute);font-size:.9rem;margin-top:2px}
+.bhead .acts{margin-top:12px}
+.bhead .acts .btn{padding:8px 12px;font-size:.85rem}
+.dates{display:flex;flex-wrap:wrap;gap:8px}
+.dates a{text-decoration:none;font-size:.84rem;border:1px solid var(--line);background:var(--card);border-radius:20px;padding:5px 12px}
+.dates a b{color:var(--garnet)}
+.avg{display:flex;align-items:center;gap:14px}
+.avg .n{font-size:2rem;font-weight:800;line-height:1}
+.avg .stars{font-size:1.1rem}
+
+/* forms */
+form.fm{display:grid;gap:10px}
+.fm label{font-size:.85rem;font-weight:700;display:grid;gap:4px}
+.fm label span.hint{font-weight:400;color:var(--mute);font-size:.78rem}
+.fm input,.fm textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:16px}
+.fm textarea{min-height:110px;resize:vertical}
+.fm .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.fm .msg{font-size:.85rem;min-height:1.2em}
+.fm .msg.err{color:var(--garnet)}
+.fm .msg.ok{color:var(--ok)}
+.rate{display:flex;gap:2px}
+.rate button{background:none;border:0;font-size:1.9rem;line-height:1;color:var(--line);cursor:pointer;padding:2px 3px}
+.rate button.on{color:var(--star)}
+.note{font-size:.78rem;color:var(--mute)}
+
+/* lists */
+.list{display:grid;gap:10px}
+.item .meta{font-size:.78rem;color:var(--mute);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.item .one{font-weight:700;margin:4px 0 2px}
+.item .body{white-space:pre-wrap;font-size:.92rem}
+.item .book{font-size:.8rem;color:var(--garnet);text-decoration:none;font-weight:700}
+a.item{text-decoration:none;display:block}
+.post h1{font-family:'Nanum Myeongjo',Georgia,serif;font-size:1.3rem;line-height:1.4;margin:4px 0 8px}
+.res{display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:center;text-decoration:none;padding:12px 14px}
+.res .d{font-size:.8rem;color:var(--mute);white-space:nowrap}
+.res .t{font-weight:700;font-size:.92rem;line-height:1.35}
+.res .r{font-size:.78rem;color:var(--garnet);white-space:nowrap}
+.yr{font-size:.8rem;font-weight:800;color:var(--mute);margin:16px 0 6px}
+select.sel{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);font-size:16px;margin-bottom:6px}
+
+@media(min-width:640px){
+ .now{grid-template-columns:120px 1fr}.now img,.now .ph{width:120px}
+ .bhead{grid-template-columns:150px 1fr}
+ .quick{grid-template-columns:repeat(4,1fr)}
+}
