@@ -19,7 +19,8 @@ window.BOOKLOVE_CONFIG = {
   currentBook: {
     slug: 'ecclesiastes',
     title: '허무한 날에는 전도서를 읽는다',
-    author: '',
+    author: '바비 제이미슨',
+    cover: 'covers/ecclesiastes.jpg',
     note: '',
     nextMeeting: '매주 수요일 오전 9시 · 매주 금요일 저녁 7시',
     place: '',
