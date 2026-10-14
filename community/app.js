@@ -6,6 +6,13 @@
   'use strict';
   var CFG = window.BOOKLOVE_CONFIG || {};
   var BOOKS = window.BOOKLOVE_CATALOG || [];
+  // A current book that has no folder yet (just started) is added from config.js.
+  (function () {
+    var cb = CFG.currentBook || {};
+    if (!cb.slug || !cb.title) return;
+    for (var i = 0; i < BOOKS.length; i++) if (BOOKS[i].slug === cb.slug) return;
+    BOOKS.unshift({ slug: cb.slug, title: cb.title, author: cb.author || '', cover: cb.cover || '', sessions: [] });
+  })();
   var LIVE = !!(CFG.supabaseUrl && CFG.supabaseAnonKey);
   var GATE_KEY = 'blk_v1';              // same session key the hub gate uses
   var CODE_KEY = 'blk_member_code';     // remembered for this tab only after a successful write

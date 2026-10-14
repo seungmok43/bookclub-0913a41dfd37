@@ -15,12 +15,14 @@ window.BOOKLOVE_CONFIG = {
   supabaseAnonKey: 'sb_publishable_qYq0ARsXYfCv4KHB0DLXJQ_dSOo7u8-',
 
   // 지금 읽는 책 / 다음 모임 — edit these lines when the club moves on.
-  // slug must match a book folder name (e.g. 'waste'). example: true shows an 「예시」 badge.
+  // slug: a book folder name, or a new slug with title (a book with no folder yet). example: true shows an 「예시」 badge.
   currentBook: {
-    slug: 'waste',
-    note: '수요 오전 모임',
-    nextMeeting: '날짜 미정 (예시)',
-    place: '장소 미정 (예시)',
-    example: true
+    slug: 'ecclesiastes',
+    title: '허무한 날에는 전도서를 읽는다',
+    author: '',
+    note: '',
+    nextMeeting: '매주 수요일 오전 9시 · 매주 금요일 저녁 7시',
+    place: '',
+    example: false
   }
 };
