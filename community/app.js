@@ -603,6 +603,11 @@
 
   function viewAccount(root) {
     function back() {
+      var url = sget('blk_return_url');
+      if (url) {   // came from a session page's comment box
+        try { sessionStorage.removeItem('blk_return_url'); } catch (e) { }
+        if (url.indexOf(location.origin + '/') === 0) { location.href = url; return; }
+      }
       var to = sget('blk_return') || '#/';
       try { sessionStorage.removeItem('blk_return'); } catch (e) { }
       location.hash = to.indexOf('#/account') === 0 ? '#/' : to;
