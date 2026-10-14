@@ -126,3 +126,11 @@ select.sel{width:100%;padding:10px 12px;border:1px solid var(--line);border-radi
  .bhead{grid-template-columns:150px 1fr}
  .quick{grid-template-columns:repeat(4,1fr)}
 }
+/* accounts */
+.topr{display:flex;gap:6px;align-items:center}
+.who{font-size:.85rem;color:var(--mute)}
+.who b{color:var(--ink,inherit)}
+.login-ask p{margin:0 0 10px;font-size:.92rem}
+.own{display:flex;gap:12px;margin-top:8px}
+.lnk{background:none;border:0;padding:0;color:var(--garnet);font-size:.82rem;cursor:pointer;text-decoration:underline}
+.meta .lnk{margin-left:auto}
