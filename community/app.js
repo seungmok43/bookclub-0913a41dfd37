@@ -144,46 +144,57 @@
     addReview: function (x) {
       if (!LIVE) return Promise.resolve(Demo.write(function (d) {
         var row = { id: uid(), book_slug: x.slug, rating: x.rating, one_liner: x.one, body: x.body || null,
-          nickname: nickname(), created_at: new Date().toISOString() };
+          nickname: nickNow || nickname(), created_at: new Date().toISOString() };
         d.reviews.push(row); return { ok: true, id: row.id };
       }));
-      return rpc('add_review', { p_code: x.code, p_book_slug: x.slug, p_rating: x.rating, p_one_liner: x.one, p_body: x.body || null });
+      return rpc('add_review', { p_code: x.code, p_book_slug: x.slug, p_rating: x.rating, p_one_liner: x.one, p_body: x.body || null, p_nickname: nickNow || null });
     },
     addPost: function (x) {
       if (!LIVE) return Promise.resolve(Demo.write(function (d) {
-        var row = { id: uid(), title: x.title, body: x.body, nickname: nickname(), created_at: new Date().toISOString() };
+        var row = { id: uid(), title: x.title, body: x.body, nickname: nickNow || nickname(), created_at: new Date().toISOString() };
         d.posts.push(row); return { ok: true, id: row.id };
       }));
-      return rpc('add_post', { p_code: x.code, p_title: x.title, p_body: x.body });
+      return rpc('add_post', { p_code: x.code, p_title: x.title, p_body: x.body, p_nickname: nickNow || null });
     },
     addComment: function (x) {
       if (!LIVE) return Promise.resolve(Demo.write(function (d) {
         if (!d.posts.some(function (p) { return p.id === x.postId; })) return { ok: false, error: 'not_found' };
-        var row = { id: uid(), post_id: x.postId, body: x.body, nickname: nickname(), created_at: new Date().toISOString() };
+        var row = { id: uid(), post_id: x.postId, body: x.body, nickname: nickNow || nickname(), created_at: new Date().toISOString() };
         d.comments.push(row); return { ok: true, id: row.id };
       }));
-      return rpc('add_comment', { p_code: x.code, p_post_id: x.postId, p_body: x.body });
+      return rpc('add_comment', { p_code: x.code, p_post_id: x.postId, p_body: x.body, p_nickname: nickNow || null });
     }
   };
 
   // ---------- shared form pieces ----------
   function codeField() {
-    var inp = h('input', { type: 'password', name: 'code', autocomplete: 'off', placeholder: '모임에서 받은 코드', maxlength: '100' });
+    // type=text + text-security: Chrome must not fill in the saved site password here.
+    var inp = h('input', { type: 'text', name: 'member-code', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false',
+      placeholder: '모임에서 받은 코드', maxlength: '100', style: '-webkit-text-security:disc' });
     var saved = sget(CODE_KEY); if (saved) inp.value = saved;
+    var nm = h('input', { type: 'text', name: 'display-name', autocomplete: 'nickname', placeholder: '예: 들꽃, 김집사', maxlength: String(NAME_MAX) });
+    nm.value = lget(NAME_KEY) || '';
+    inp.nameInput = nm;
     return {
-      el: h('label', null, '입장 코드',
-        h('span', { class: 'hint' }, LIVE ? '글은 북클럽 멤버만 남길 수 있습니다.' : '체험 모드에서는 아무 코드나 입력해도 됩니다.'), inp),
+      el: [h('label', null, '이름 또는 별명 (선택)',
+            h('span', { class: 'hint' }, '비워 두면 「책갈피 23」처럼 임의의 별명이 붙습니다.'), nm),
+          h('label', null, '입장 코드',
+            h('span', { class: 'hint' }, LIVE ? '모임에서 받은 북클럽 공통 코드입니다. 멤버만 글을 남길 수 있습니다.' : '체험 모드에서는 아무 코드나 입력해도 됩니다.'), inp)],
       input: inp
     };
   }
-  function anonNote() {
-    return h('p', { class: 'note' }, '이름은 저장되지 않습니다. 글마다 「책갈피 23」처럼 임의의 별명이 붙습니다.');
-  }
+  function anonNote() { return null; }
+  var NAME_KEY = 'blk_name', NAME_MAX = 20, nickNow = '';
+  function lget(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lset(k, v) { try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch (e) { } }
+  function cleanName(v) { return (v || '').replace(/\s+/g, ' ').trim().slice(0, NAME_MAX); }
   // Runs a write: checks code, disables the button, shows result.
   function submitWith(btn, msg, codeInp, check, send, done) {
     msg.className = 'msg'; msg.textContent = '';
     var bad = check(); if (bad) { msg.className = 'msg err'; msg.textContent = bad; return; }
     var code = codeInp.value.trim();
+    nickNow = codeInp.nameInput ? cleanName(codeInp.nameInput.value) : '';
+    lset(NAME_KEY, nickNow);
     if (!code) { msg.className = 'msg err'; msg.textContent = ERR.no_code; codeInp.focus(); return; }
     btn.disabled = true; msg.textContent = '올리는 중…';
     send(code).then(function (res) {
@@ -226,7 +237,7 @@
     var nSessions = BOOKS.reduce(function (s, x) { return s + x.sessions.length; }, 0);
     root.appendChild(h('section', { class: 'sec quick' },
       h('a', { class: 'card', href: '#/library' }, h('b', null, '서재'), h('span', null, BOOKS.length + '권의 책과 서평')),
-      h('a', { class: 'card', href: '#/share' }, h('b', null, '나눔'), h('span', null, '이름 없이 나누는 이야기')),
+      h('a', { class: 'card', href: '#/share' }, h('b', null, '나눔'), h('span', null, '편하게 나누는 이야기')),
       h('a', { class: 'card', href: '#/resources' }, h('b', null, '자료실'), h('span', null, '모임 기록 ' + nSessions + '개')),
       h('a', { class: 'card', href: '../' }, h('b', null, '허브'), h('span', null, '처음 화면으로'))));
 
@@ -377,8 +388,8 @@
   }
 
   function viewShare(root) {
-    root.appendChild(h('h1', { class: 'h2' }, '나눔', h('small', null, '이름 없이 나누는 자리')));
-    root.appendChild(h('p', { class: 'lead' }, '책을 읽으며 든 생각, 기도 제목, 마음에 남은 문장을 편하게 나눠 주세요. 글마다 임의의 별명이 붙고, 이름은 남지 않습니다.'));
+    root.appendChild(h('h1', { class: 'h2' }, '나눔', h('small', null, '편하게 나누는 자리')));
+    root.appendChild(h('p', { class: 'lead' }, '책을 읽으며 든 생각, 기도 제목, 마음에 남은 문장을 편하게 나눠 주세요. 이름이나 별명을 적어도 되고, 비워 두면 임의의 별명이 붙습니다.'));
     var title = h('input', { name: 'title', maxlength: String(LIMITS.title), placeholder: '제목' });
     var body = h('textarea', { name: 'body', maxlength: String(LIMITS.post), placeholder: '나누고 싶은 이야기' });
     var code = codeField();
