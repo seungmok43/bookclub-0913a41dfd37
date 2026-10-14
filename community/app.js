@@ -176,10 +176,10 @@
     nm.value = lget(NAME_KEY) || '';
     inp.nameInput = nm;
     return {
-      el: [h('label', null, '이름 또는 별명 (선택)',
+      nameEl: h('label', null, '이름 또는 별명 (선택)',
             h('span', { class: 'hint' }, '비워 두면 「책갈피 23」처럼 임의의 별명이 붙습니다.'), nm),
-          h('label', null, '입장 코드',
-            h('span', { class: 'hint' }, LIVE ? '모임에서 받은 북클럽 공통 코드입니다. 멤버만 글을 남길 수 있습니다.' : '체험 모드에서는 아무 코드나 입력해도 됩니다.'), inp)],
+      el: h('label', null, '입장 코드',
+            h('span', { class: 'hint' }, LIVE ? '모임에서 받은 북클럽 공통 코드입니다. 멤버만 글을 남길 수 있습니다.' : '체험 모드에서는 아무 코드나 입력해도 됩니다.'), inp),
       input: inp
     };
   }
@@ -347,6 +347,7 @@
     var msg = h('div', { class: 'msg', role: 'status' });
     var btn = h('button', { class: 'btn', type: 'submit' }, '서평 남기기');
     var f = h('form', { class: 'fm', novalidate: true },
+      code.nameEl,
       h('label', null, '별점', stars),
       h('label', null, h('span', { class: 'row' }, '한줄평', counter(one, LIMITS.one)), one),
       h('label', null, h('span', { class: 'row' }, '서평 (선택)', counter(body, LIMITS.review)), body),
@@ -396,6 +397,7 @@
     var msg = h('div', { class: 'msg', role: 'status' });
     var btn = h('button', { class: 'btn', type: 'submit' }, '올리기');
     var f = h('form', { class: 'fm', novalidate: true },
+      code.nameEl,
       h('label', null, h('span', { class: 'row' }, '제목', counter(title, LIMITS.title)), title),
       h('label', null, h('span', { class: 'row' }, '내용', counter(body, LIMITS.post)), body),
       code.el, anonNote(), h('div', { class: 'row' }, msg, btn));
@@ -459,6 +461,7 @@
     var msg = h('div', { class: 'msg', role: 'status' });
     var btn = h('button', { class: 'btn', type: 'submit' }, '댓글 달기');
     var f = h('form', { class: 'fm', novalidate: true },
+      code.nameEl,
       h('label', null, h('span', { class: 'row' }, '댓글', counter(body, LIMITS.comment)), body), code.el, anonNote(),
       h('div', { class: 'row' }, msg, btn));
     f.addEventListener('submit', function (e) {
