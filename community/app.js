@@ -6,13 +6,14 @@
   'use strict';
   var CFG = window.BOOKLOVE_CONFIG || {};
   var BOOKS = window.BOOKLOVE_CATALOG || [];
+  // Current books: one per group (currentBooks), or the single currentBook as before.
+  var CURRENT = CFG.currentBooks || (CFG.currentBook ? [CFG.currentBook] : []);
   // A current book that has no folder yet (just started) is added from config.js.
-  (function () {
-    var cb = CFG.currentBook || {};
+  CURRENT.slice().reverse().forEach(function (cb) {
     if (!cb.slug || !cb.title) return;
     for (var i = 0; i < BOOKS.length; i++) if (BOOKS[i].slug === cb.slug) return;
     BOOKS.unshift({ slug: cb.slug, title: cb.title, author: cb.author || '', cover: cb.cover || '', sessions: [] });
-  })();
+  });
   var LIVE = !!(CFG.supabaseUrl && CFG.supabaseAnonKey);
   var CLUB_KEY = 'blk_club';            // club code, kept on this device after it opens the page
   var ACC_KEY = 'blk_acct';             // { t: login token, id, name } — kept on this device
@@ -300,16 +301,18 @@
 
   // ---------- views ----------
   function viewHome(root) {
-    var cb = CFG.currentBook || {};
+    CURRENT.forEach(function (cb) {
     var b = bookBy(cb.slug);
     if (b) {
       var last = b.sessions.length ? b.sessions[b.sessions.length - 1] : null;
+      var byline = [b.author, cb.publisher].filter(Boolean).join(' · ');
       root.appendChild(h('section', { class: 'card now' },
         cover(b),
         h('div', null,
-          h('div', { class: 'lbl' }, '지금 읽는 책 ', cb.example ? h('span', { class: 'badge' }, '예시') : null),
+          h('div', { class: 'lbl' }, '지금 읽는 책 ', cb.group ? '· ' + cb.group + ' ' : null, cb.example ? h('span', { class: 'badge' }, '예시') : null),
           h('h2', null, bookName(b)),
-          b.author ? h('div', { class: 'muted small' }, b.author) : null,
+          cb.subtitle ? h('div', { class: 'muted small' }, cb.subtitle) : null,
+          byline ? h('div', { class: 'muted small' }, byline) : null,
           h('dl', null,
             cb.note ? [h('dt', null, '모임'), h('dd', null, cb.note)] : null,
             h('dt', null, '다음 모임'), h('dd', null, cb.nextMeeting || '미정'),
@@ -319,6 +322,7 @@
             h('a', { class: 'btn', href: '#/book/' + b.slug }, '책 자세히'),
             h('a', { class: 'btn ghost', href: '#/book/' + b.slug + '/write' }, '서평 남기기')))));
     }
+    });
     var nSessions = BOOKS.reduce(function (s, x) { return s + x.sessions.length; }, 0);
     root.appendChild(h('section', { class: 'sec quick' },
       h('a', { class: 'card', href: '#/library' }, h('b', null, '서재'), h('span', null, BOOKS.length + '권의 책과 서평')),
