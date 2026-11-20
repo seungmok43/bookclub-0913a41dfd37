@@ -1,0 +1,103 @@
+// Life-question groups — DRAFT for the owner (source: 4_콘텐츠출판국/_보고/북클럽_질문별묶음_초안_20261120.md).
+// Group order is not a ranking. draft:true shows the grey 「초안」 tag.
+window.V2_GROUPS = {
+ "draft": true,
+ "groups": [
+  {
+   "q": "아이를 키우며, 가정을 세우며",
+   "line": "아이와 배우자 곁에서 내 마음부터 들여다보게 하는 책들입니다.",
+   "slugs": [
+    "anxious",
+    "parenting",
+    "definition",
+    "marriage"
+   ]
+  },
+  {
+   "q": "일과 돈, 하루하루의 삶 앞에서",
+   "line": "출근하고 벌고 먹고 자는 평범한 하루를 믿음으로 다시 보게 하는 자리입니다.",
+   "slugs": [
+    "work",
+    "money",
+    "pai",
+    "time",
+    "mom"
+   ]
+  },
+  {
+   "q": "죄와 은혜 — 내 안을 마주할 때",
+   "line": "내 안의 어두운 곳을 보다가 끝내 은혜에 닿게 되는 책들입니다.",
+   "slugs": [
+    "sin",
+    "vices",
+    "counterfeit-gods",
+    "forgive",
+    "freedom"
+   ]
+  },
+  {
+   "q": "믿음을 처음부터 다시 묻고 싶을 때",
+   "line": "믿는다는 것이 무엇인지 처음부터 차근차근 다시 짚어 보는 책들입니다.",
+   "slugs": [
+    "being-christian",
+    "what-we-believe",
+    "calvinist",
+    "mere-christianity",
+    "faith-again",
+    "surprised-by-joy"
+   ]
+  },
+  {
+   "q": "다른 생각을 가진 세상과 마주 앉을 때",
+   "line": "나와 생각이 다른 세상 앞에서 확신과 존중을 함께 지키는 길을 묻는 책들입니다.",
+   "slugs": [
+    "civility",
+    "wisdom",
+    "humanities",
+    "creation-regained",
+    "creation-chronicle",
+    "decalogue-art"
+   ]
+  },
+  {
+   "q": "삶이 허무하고 평범하게만 느껴질 때",
+   "line": "다 부질없어 보이는 날, 그 마음 그대로 펼쳐도 되는 책들입니다.",
+   "slugs": [
+    "ecclesiastes",
+    "stoner",
+    "waste"
+   ]
+  }
+ ],
+ "forWhom": {
+  "anxious": "스마트폰에 아이를 빼앗긴 것 같아 마음이 무거운 부모님께",
+  "parenting": "육아서를 찾다가 내 마음부터 돌아보고 싶어진 부모님께",
+  "definition": "가족·결혼·사랑을 아이에게 어떻게 설명해 줄지 고민하는 분께",
+  "marriage": "결혼한 분도, 결혼을 기도하며 기다리는 분도 함께 읽을 분께",
+  "work": "내 직업이 신앙과 멀리 있는 것 같아 마음이 걸리는 분께",
+  "money": "돈을 어떻게 바라봐야 할지 솔직하게 묻고 싶은 분께",
+  "pai": "기도한 것을 삶에서 행동으로 옮기고 싶은 분께",
+  "time": "늘 시간에 쫓기며 하루를 관리하려 애쓰는 분께",
+  "mom": "먹고 자고 움직이는 매일의 몸을 신앙 안에서 돌보고 싶은 분께",
+  "sin": "죄를 생각하면 자책만 깊어지는 분께",
+  "vices": "내 마음의 버릇을 정직하게 비춰 보고 싶은 분께",
+  "counterfeit-gods": "좋은 것을 붙들다 오히려 지쳐 버린 분께",
+  "forgive": "용서해야 하는 줄 알지만 막상 그 앞에서 멈춰 선 분께",
+  "freedom": "남의 시선과 비교 때문에 마음이 늘 바쁜 분께",
+  "being-christian": "하나님을 '아버지'로 가까이 느끼고 싶은 분께",
+  "what-we-believe": "사도신경으로 고백하는 내용을 한 줄씩 짚어 보고 싶은 분께",
+  "calvinist": "자녀에게 신앙을 설명할 말이 필요한 부모님께",
+  "mere-christianity": "기독교가 무엇인지 처음부터 차근차근 따라가 보고 싶은 분께",
+  "faith-again": "감정이 오르내려 구원의 확신이 흔들리는 분께",
+  "surprised-by-joy": "하나님을 피해 멀리 돌아온 길이 있는 분께",
+  "civility": "확신은 지키되 다른 사람에게 무례하고 싶지 않은 분께",
+  "wisdom": "갈라진 세상에서 이기기보다 들어 주고 싶은 분께",
+  "humanities": "AI 시대에 신앙인이 무엇을 붙들어야 할지 묻는 분께",
+  "creation-regained": "깨어진 세상을 보며 하나님이 어디 계신지 묻는 분께",
+  "creation-chronicle": "창조와 진화 이야기로 마음 다친 적이 있는 분께",
+  "decalogue-art": "요즘 문화를 무엇으로 분별할지 고민하는 분께",
+  "ecclesiastes": "애써 쥐어도 다 빠져나가는 것 같은 날을 지나는 분께",
+  "stoner": "내 삶이 너무 평범하고 작아 보이는 분께",
+  "waste": "가장 좋은 것은 아직 오지 않았다며 버텨 온 분께"
+ }
+};
