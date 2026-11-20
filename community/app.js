@@ -65,7 +65,7 @@
 
   // ---------- data layer ----------
   var ERR = {
-    invalid_code: '입장 코드가 맞지 않습니다. 모임에서 받은 코드를 확인해 주세요.',
+    invalid_code: '가입을 여는 중입니다. 잠시 후 다시 시도해 주세요.',
     no_code: '입장 코드를 입력해 주세요.',
     bad_login: '이름 또는 비밀번호가 맞지 않습니다.',
     name_taken: '이미 쓰이는 이름입니다. 다른 이름이나 별명을 정해 주세요.',
@@ -619,7 +619,7 @@
     function lab(t, hint, inp) { return h('label', null, t, hint ? h('span', { class: 'hint' }, hint) : null, inp); }
     if (ACC) {
       root.appendChild(h('h1', { class: 'h2' }, '내 계정'));
-      root.appendChild(h('p', { class: 'lead' }, ACC.name + '님으로 로그인되어 있습니다. 이 기기에서는 30일 동안 로그인이 유지됩니다.'));
+      root.appendChild(h('p', { class: 'lead' }, ACC.name + '님으로 로그인되어 있습니다. 이 기기에서는 로그아웃할 때까지 로그인이 유지됩니다.'));
       var o = pwInput('current-password'), n1 = pwInput('new-password'), n2 = pwInput('new-password');
       var msg = h('div', { class: 'msg', role: 'status' });
       var btn = h('button', { class: 'btn', type: 'submit' }, '비밀번호 바꾸기');
@@ -647,7 +647,7 @@
     function finish(res) { setAcc({ t: res.token, id: res.id, name: res.name }); back(); }
 
     root.appendChild(h('h1', { class: 'h2' }, '로그인'));
-    root.appendChild(h('p', { class: 'lead' }, '서평과 나눔은 로그인한 멤버만 쓸 수 있습니다. 한 번 로그인하면 이 기기에서 30일 동안 유지됩니다.'));
+    root.appendChild(h('p', { class: 'lead' }, '글은 누구나 읽을 수 있고, 서평·나눔·댓글은 로그인한 멤버만 쓸 수 있습니다. 한 번 로그인하면 이 기기에서 로그아웃할 때까지 유지됩니다.'));
     var ln = h('input', { type: 'text', name: 'username', autocomplete: 'username', maxlength: String(NAME_MAX), autocapitalize: 'off' });
     var lp = pwInput('current-password');
     var lm = h('div', { class: 'msg', role: 'status' });
@@ -661,33 +661,25 @@
     root.appendChild(h('div', { class: 'card' }, lf));
 
     root.appendChild(h('div', { class: 'or' }, h('span', null, '처음이신가요?')));
-    var club = lget(CLUB_KEY) || '';
-    var rc = h('input', { type: 'text', name: 'club-code', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', style: '-webkit-text-security:disc' });
-    var rcl = lab('입장 코드', '모임에서 받은 코드', rc); rcl.hidden = !!club;
     var rn = h('input', { type: 'text', name: 'username', autocomplete: 'username', maxlength: String(NAME_MAX), placeholder: '예: 김집사, 들꽃' });
     var rp = pwInput('new-password'), rp2 = pwInput('new-password');
     var rm = h('div', { class: 'msg', role: 'status' });
     var rb = h('button', { class: 'btn ghost', type: 'submit' }, '가입하기');
     var rf = h('form', { class: 'fm', novalidate: true },
-      h('div', { class: 'join-head' }, h('b', null, '새로 가입하기'), h('span', null, '처음 한 번만 하면 됩니다. 다음부터는 위에서 로그인하세요.')), rcl,
+      h('div', { class: 'join-head' }, h('b', null, '새로 가입하기'), h('span', null, '처음 한 번만 하면 됩니다. 다음부터는 위에서 로그인하세요.')),
       lab('이름 또는 별명', '서평과 나눔에 이 이름이 보입니다. 20자까지, 다른 멤버와 겹치지 않게.', rn),
       lab('비밀번호', '4자 이상. 잊으면 모임 리더에게 말씀해 주세요.', rp), lab('비밀번호 한 번 더', null, rp2),
       h('div', { class: 'row' }, rm, rb));
     rf.addEventListener('submit', function (e) {
       e.preventDefault();
-      var code = rcl.hidden ? club : rc.value.trim();
       run(rb, rm, function () {
-        if (!code) return ERR.no_code;
         if (!cleanName(rn.value)) return ERR.invalid_name;
         if (rp.value.length < 4) return ERR.weak_password;
         if (rp.value !== rp2.value) return '비밀번호가 서로 다릅니다.';
         return null;
       }, function () {
-        return Store.register(code, cleanName(rn.value), rp.value).then(function (res) {
-          if (res && res.error === 'invalid_code') { lset(CLUB_KEY, ''); rcl.hidden = false; rc.value = ''; }
-          return res;
-        });
-      }, function (res) { if (!rcl.hidden) lset(CLUB_KEY, code); finish(res); });
+        return Store.register('', cleanName(rn.value), rp.value);
+      }, finish);
     });
     root.appendChild(h('div', { class: 'card join' }, rf));
   }
@@ -778,5 +770,5 @@
     b.onclick = go;
     p.onkeydown = function (e) { if (e.key === 'Enter') go(); };
   }
-  if (ACC || lget(CLUB_KEY)) start(); else showGate();
+  start();   // reading is open to everyone; login is asked only when writing
 })();
