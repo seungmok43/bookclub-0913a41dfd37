@@ -363,7 +363,8 @@
           h('div', { class: 't' }, bookName(b)),
           b.author ? h('div', { class: 'a' }, b.author) : null,
           h('div', { class: 'm' }, (b.sessions.length ? '모임 ' + b.sessions.length + '회 · ' + last : '모임 기록 없음')),
-          st ? h('div', { class: 'm' }, h('span', { class: 'stars' }, starText(st.avg)), ' ' + st.avg.toFixed(1) + ' (' + st.n + ')') : null));
+          st ? (st.n >= 3 ? h('div', { class: 'm' }, h('span', { class: 'stars' }, starText(st.avg)), ' ' + st.avg.toFixed(1) + ' (' + st.n + ')')
+            : h('div', { class: 'm' }, '서평 ' + st.n)) : null));
       });
       if (!shown.length) grid.appendChild(h('p', { class: 'empty' }, '찾는 책이 없습니다.'));
     }
@@ -407,7 +408,10 @@
     function refresh() {
       Store.reviews(b.slug).then(function (rows) {
         sum.textContent = ''; list.textContent = '';
-        if (rows.length) {
+        if (rows.length && rows.length < 3) {
+          add(sum, h('div', { class: 'muted small' }, '서평 ' + rows.length + '개 · 평균 별점은 서평이 3개 이상일 때 보입니다.'));
+          rows.forEach(function (r) { list.appendChild(reviewItem(r, false, refresh)); });
+        } else if (rows.length) {
           var a = avgOf(rows);
           add(sum, [h('div', { class: 'n' }, a.toFixed(1)),
             h('div', null, h('div', { class: 'stars' }, starText(a)), h('div', { class: 'muted small' }, '서평 ' + rows.length + '개의 평균'))]);

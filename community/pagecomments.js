@@ -111,4 +111,13 @@
       .then(draw, function () { box.textContent = ''; box.appendChild(h('div', { class: 'em' }, ERR.network)); });
   }
   load();
+
+  // Footer nav: fill 「이 책의 서평 N건 보기」 with the live count (text only).
+  Array.prototype.forEach.call(document.querySelectorAll('[data-blk-reviews]'), function (el) {
+    var slug = el.getAttribute('data-blk-reviews');
+    if (!/^[a-z0-9-]{1,40}$/.test(slug)) return;
+    api('/rest/v1/reviews?select=id&book_slug=eq.' + encodeURIComponent(slug)).then(function (rows) {
+      if (rows && rows.length) el.textContent = rows.length + '건 ';
+    }, function () { });
+  });
 })();
