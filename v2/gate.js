@@ -31,7 +31,10 @@
     '#blk-gate .bt:disabled{opacity:.55}' +
     '#blk-gate .sw{display:block;margin:18px auto 0;min-height:48px;padding:0 20px;border:1px solid #8C2F39;border-radius:24px;background:#fff;color:#8C2F39;font:inherit;font-size:16px;font-weight:700;cursor:pointer}' +
     '#blk-gate .ms{font-size:15px;min-height:1.2em;color:#6B6459;margin:0}#blk-gate .ms.er{color:#b3261e}#blk-gate .ms.ok{color:#2f5e53;font-weight:700}' +
-    '#blk-gate .ft{text-align:center;color:#6B6459;font-size:14px;margin-top:22px}';
+    '#blk-gate .ft{text-align:center;color:#6B6459;font-size:14px;margin-top:22px}' +
+    // the home page's old-library photo behind the login card (self-hosted; credit on the home hero)
+    '#blk-gate{background:linear-gradient(180deg,rgba(24,14,6,.50),rgba(20,11,4,.80)),url(' + ROOT + 'assets/img/hero-library-900.jpg) center 35%/cover no-repeat #2a1d12}' +
+    '#blk-gate .br{color:#FBF4E6;text-shadow:0 2px 10px rgba(0,0,0,.5)}#blk-gate .tl,#blk-gate .ft{color:#F3E3C3;text-shadow:0 1px 6px rgba(0,0,0,.6)}';
   var st = document.createElement('style'); st.id = 'blk-gate-css'; st.textContent = css;
   (document.head || de).appendChild(st);
 

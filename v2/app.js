@@ -406,6 +406,22 @@
   }
   function viewHome(root) {
     var cbs = CFG.currentBooks || (CFG.currentBook ? [CFG.currentBook] : []);
+    // Home sentence — same wording as before, now on the opening photo. Breaks only at meaning units.
+    // Trust line rule: N = every meeting listed in community/catalog.js (open + locked sessions);
+    // M = books that have at least one such session; first year = earliest session date.
+    var all = allSessions();
+    var N = all.length, M = BOOKS.filter(function (b) { return b.sessions.length > 0; }).length;
+    var first = all.length ? all[all.length - 1].s.date.slice(0, 4) : '';
+    var IMG = BASE + 'assets/img/hero-library-';
+    add(root, h('section', { class: 'lhero' },
+      h('picture', null, h('source', { media: '(min-width: 700px)', srcset: IMG + '1600.jpg' }),
+        h('img', { src: IMG + '900.jpg', alt: '', width: '900', height: '1260', decoding: 'async', fetchpriority: 'high' })),
+      h('div', { class: 'lh-in' },
+        h('p', { class: 'lh-brand' }, 'BooKLove'),
+        h('p', { class: 'lh-tag' }, CFG.tagline || '책으로 삶을 읽다'),
+        h('p', { class: 'trust' }, first + '년부터 모였습니다. ', h('br'), '함께 읽은 모든 책을 기록으로 남기지 못했지만, ', h('br'),
+          '이곳에 그 일부인 ' + M + '권의 책과 ' + N + '번의 모임 기록이 담겨져 있습니다.')),
+      h('a', { class: 'lh-cr', href: 'https://unsplash.com/@woltss78', target: '_blank', rel: 'noopener' }, '사진: Nikolai Sidorov / Unsplash')));
     if (cbs.length) {
       add(root, h('h2', { class: 'sec first' }, '이번 주 모임'));
       add(root, h('div', { class: 'week' }, cbs.map(function (c) {
@@ -456,10 +472,6 @@
 
     // Trust line rule: N = every meeting listed in community/catalog.js (open + locked sessions);
     // M = books that have at least one such session; first year = earliest session date.
-    var all = allSessions();
-    var N = all.length, M = BOOKS.filter(function (b) { return b.sessions.length > 0; }).length;
-    var first = all.length ? all[all.length - 1].s.date.slice(0, 4) : '';
-    add(root, h('p', { class: 'trust' }, first + '년부터 모였습니다. 함께 읽은 모든 책을 기록으로 남기지 못했지만, 이곳에 그 일부인 ' + M + '권의 책과 ' + N + '번의 모임 기록이 담겨져 있습니다.'));
 
     add(root, h('h2', { class: 'sec' }, '최근 서평'));
     var rb = h('div', null, h('p', { class: 'empty' }, '불러오는 중…'));
