@@ -59,3 +59,11 @@ a.back:hover{color:var(--accent);border-color:var(--accent)}
 }
 /* full-bleed photo hero: match the 12px phone gutter set by each page's own mobile rule */
 @media(max-width:560px){.hero.photo{margin:0 -12px}}
+
+/* 그날의 이야기 — 강조 표시 (2026-11-23): 음영=한 줄 요지 · 굵게=붙들 문장 · 색=낱말 · 밑줄=책·성경 */
+.storybox mark.hl{background:linear-gradient(transparent 55%,#F6DFA4 55%);color:inherit;font-weight:700;padding:0 .08em}
+.storybox b{font-weight:700;color:var(--ink)}
+.storybox .tm{color:var(--accent);font-weight:700}
+.storybox .u{text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:1.5px;text-underline-offset:.22em}
+.storybox .mkey{font-size:.8125rem;color:var(--muted);margin:0 0 1rem;line-height:1.7}
+.storybox .mkey b,.storybox .mkey .tm,.storybox .mkey mark{font-size:inherit}
