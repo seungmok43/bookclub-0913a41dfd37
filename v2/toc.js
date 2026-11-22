@@ -12,14 +12,14 @@
     if (hs.length < 2) return;
     var css = '.v2toc{margin:18px 0 22px;border:1px solid #E3DCCF;border-radius:14px;background:#fff;' +
       'font-family:Pretendard,"Apple SD Gothic Neo",system-ui,sans-serif;}' +
-      '.v2toc summary{cursor:pointer;list-style:none;padding:13px 18px;font-weight:700;font-size:15px;color:#8C2F39;}' +
+      '.v2toc summary{cursor:pointer;list-style:none;padding:0 18px;min-height:48px;display:flex;align-items:center;font-weight:700;font-size:.9375rem;color:#8C2F39;}' +
       '.v2toc summary::-webkit-details-marker{display:none}' +
-      '.v2toc summary::after{content:" ▾";color:#6B6459;font-weight:400}' +
+      '.v2toc summary::after{content:"\\00a0▾";color:#6B6459;font-weight:400}' +
       '.v2toc[open] summary{border-bottom:1px solid #E3DCCF}' +
       '.v2toc ol{list-style:none;margin:0;padding:8px 8px 10px}' +
-      '.v2toc a{display:block;padding:8px 10px;border-radius:9px;color:#23201B;text-decoration:none;font-size:15px;line-height:1.45;word-break:keep-all}' +
+      '.v2toc a{display:block;padding:11px 10px;min-height:44px;border-radius:9px;color:#23201B;text-decoration:none;font-size:.9375rem;line-height:1.45;word-break:keep-all}' +
       '.v2toc a:hover,.v2toc a:active{background:#F3EEE4}' +
-      '.v2toc li.l3 a{padding-left:24px;font-size:14px;color:#463f34}' +
+      '.v2toc li.l3 a{padding-left:24px;font-size:.875rem;color:#463f34}' +
       '.v2toc li.l3 a::before{content:"· ";color:#9a9488}';
     var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
     var nav = document.createElement('details'); nav.className = 'v2toc'; nav.open = true;

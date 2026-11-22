@@ -43,20 +43,20 @@
 
   var css = '.blk-cm{margin:28px auto 8px;max-width:680px;padding:0 4px;font-family:inherit;color:inherit}' +
     '.blk-cm h2{font-size:1.05rem;margin:0 0 12px;display:flex;align-items:baseline;gap:8px}' +
-    '.blk-cm h2 small{font-size:.8rem;opacity:.6;font-weight:400}' +
+    '.blk-cm h2 small{font-size:.875rem;color:#6B6459;font-weight:400}' +
     '.blk-cm .it{border-top:1px solid rgba(128,128,128,.25);padding:12px 2px}' +
-    '.blk-cm .mt{font-size:.8rem;opacity:.65;display:flex;gap:10px;align-items:center}' +
+    '.blk-cm .mt{font-size:.875rem;color:#6B6459;display:flex;gap:10px;align-items:center}' +
     '.blk-cm .bd{margin-top:4px;line-height:1.7;white-space:pre-wrap;word-break:keep-all;overflow-wrap:break-word}' +
-    '.blk-cm .em{opacity:.6;font-size:.9rem;padding:8px 2px 14px}' +
+    '.blk-cm .em{color:#6B6459;font-size:.9375rem;padding:8px 2px 14px}' +
     '.blk-cm form{margin-top:14px;display:grid;gap:8px}' +
     '.blk-cm textarea{width:100%;min-height:90px;padding:11px 12px;border:1px solid rgba(128,128,128,.35);border-radius:10px;font:inherit;font-size:16px;background:rgba(255,255,255,.55);color:inherit;resize:vertical;box-sizing:border-box}' +
     '@media(prefers-color-scheme:dark){.blk-cm textarea{background:rgba(0,0,0,.25)}}' +
     '.blk-cm .rw{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}' +
-    '.blk-cm .who{font-size:.85rem;opacity:.7}' +
-    '.blk-cm .btn{border:0;border-radius:10px;background:#8C2F39;color:#fff;font-weight:700;padding:10px 16px;font-size:.92rem;cursor:pointer;text-decoration:none;display:inline-block}' +
+    '.blk-cm .who{font-size:.875rem;color:#6B6459}' +
+    '.blk-cm .btn{border:0;border-radius:10px;background:#8C2F39;color:#fff;font-weight:700;padding:0 18px;min-height:44px;font-size:.9375rem;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}' +
     '.blk-cm .btn:disabled{opacity:.5}' +
-    '.blk-cm .lnk{background:none;border:0;padding:0;color:#8C2F39;font-size:.8rem;cursor:pointer;text-decoration:underline;margin-left:auto}' +
-    '.blk-cm .msg{font-size:.85rem;min-height:1.2em;color:#8C2F39}' +
+    '.blk-cm .lnk{background:none;border:0;padding:0 6px;min-height:44px;color:#8C2F39;font-size:.875rem;cursor:pointer;text-decoration:underline;margin-left:auto}' +
+    '.blk-cm .msg{font-size:.875rem;min-height:1.2em;color:#8C2F39}' +
     '.blk-cm .ask{margin-top:12px;font-size:.92rem;display:flex;gap:10px;align-items:center;flex-wrap:wrap}';
   document.head.appendChild(h('style', null, css));
 
@@ -122,9 +122,9 @@
     var dd = Math.round((Date.parse(today) - Date.parse(date)) / 864e5);
     if (!(dd >= -1 && dd <= 60)) return;
     document.head.appendChild(h('style', null, '.blk-att{margin:22px auto 0;max-width:680px;padding:12px 14px;border:1px solid rgba(128,128,128,.28);border-radius:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:.92rem}' +
-      '.blk-att .btn{border:0;border-radius:10px;background:#8C2F39;color:#fff;font-weight:700;padding:9px 16px;font-size:.92rem;cursor:pointer}.blk-att .btn:disabled{opacity:.5}' +
-      '.blk-att .lnk{background:none;border:0;padding:0;color:#8C2F39;font-size:.82rem;cursor:pointer;text-decoration:underline}.blk-att .msg{font-size:.85rem;color:#8C2F39}' +
-      '.blk-att .host{flex-basis:100%}.blk-att .hl{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px 12px;margin-top:8px}.blk-att .hl label{display:flex;gap:6px;align-items:center;font-size:.92rem}.blk-att .hl input{width:18px;height:18px}'));
+      '.blk-att .btn{border:0;border-radius:10px;background:#8C2F39;color:#fff;font-weight:700;padding:0 18px;min-height:44px;font-size:.9375rem;cursor:pointer}.blk-att .btn:disabled{opacity:.5}' +
+      '.blk-att .lnk{background:none;border:0;padding:0 6px;min-height:44px;color:#8C2F39;font-size:.875rem;cursor:pointer;text-decoration:underline}.blk-att .msg{font-size:.875rem;color:#8C2F39}' +
+      '.blk-att .host{flex-basis:100%}.blk-att .hl{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px 12px;margin-top:8px}.blk-att .hl label{display:flex;gap:8px;align-items:center;min-height:44px;font-size:.9375rem}.blk-att .hl input{width:18px;height:18px}'));
     var bar = h('section', { class: 'blk-att', 'aria-label': '출석' });
     bar.hidden = true;
     host.insertBefore(bar, box);

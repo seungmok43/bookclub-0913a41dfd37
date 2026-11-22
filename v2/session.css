@@ -1,0 +1,61 @@
+/* BooKLove v2 — shared look for every meeting-record page (회차 기록).
+   Loaded last in <head> by tools/session_pass.py, so it overrides each page's own older styles
+   without touching the page text. Two page families exist:
+     A  (.topbar / .head / .oneliner / .topic h2 / .pull)        — older records
+     B  (.top / .hero / .lead / .storybox .topic h3 / .hc cards)  — 2026-08 onward
+   Colours and fonts are the v2 tokens (v2/style.css). Text sizes use rem so the 가/가+ control
+   (v2/session.js) scales the whole page. Nothing here is under 13px at the default size. */
+:root{
+  --bg:#FBF9F4;--surface:#F3EEE4;--ink:#23201B;--muted:#6B6459;--accent:#8C2F39;--line:#E3DCCF;
+  --serif:'Nanum Myeongjo',Georgia,'Apple SD Gothic Neo',serif;
+  --sans:'Pretendard','Apple SD Gothic Neo','맑은 고딕',system-ui,sans-serif;
+  /* family B names, mapped onto the v2 tokens */
+  --paper:#FBF9F4;--sub:#6B6459;--gold:#8C2F39;--gold-soft:#F3EEE4;--card:#fff;--brown:#2a2018;
+}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--sans)!important;word-break:keep-all}
+h1,h2,h3,.lead,.oneliner,.pull p,.hc p,.ovtext{word-break:keep-all;overflow-wrap:break-word}
+h1,.hero h1,.head h1{font-family:var(--serif)!important;font-weight:700!important;letter-spacing:-.01em}
+.slabel h2,.topic h2,.topic h3{font-family:var(--serif);font-weight:700}
+.topic h3{color:var(--accent)}
+.lead{font-family:var(--serif);font-weight:700}
+.lede-text{font-size:1.1875rem}
+/* top row: back to the book (v2 book screen) + 가/가+ */
+.topbar,.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+a.back{display:inline-flex;align-items:center;min-height:44px;padding:8px 16px;border:1px solid var(--line);border-radius:22px;
+  background:#fff;color:var(--ink);font-size:.9375rem;font-weight:600;text-decoration:none;line-height:1.3}
+a.back:hover{color:var(--accent);border-color:var(--accent)}
+.fsz{display:inline-flex;gap:6px;margin-left:auto}
+.fsz button{min-width:44px;min-height:44px;border:1px solid var(--line);border-radius:22px;background:#fff;color:var(--ink);
+  font-family:var(--sans);font-weight:700;cursor:pointer;padding:0 10px;line-height:1}
+.fsz button:first-child{font-size:15px}.fsz button:last-child{font-size:18px}
+.fsz button:disabled{opacity:.45;cursor:default}
+/* reading-position bar */
+.rprog{position:fixed;left:0;top:0;height:4px;width:0;background:var(--accent);z-index:50;transition:width .08s linear}
+/* small labels → at least 13px */
+.eyebrow,.hero .eyebrow{font-size:.8125rem!important}
+.slabel .cnt,.priv,.credit,.srcnote,.qb .tg,.qb cite,.hc.bookq figcaption{font-size:.8125rem!important}
+.credit{color:var(--muted)}
+.priv,.foot-note{color:var(--muted)!important}
+.hero .meta,.meta{font-size:.875rem}
+/* family B accents in v2 colours */
+.hero .eyebrow{color:var(--accent)}
+.hero.photo .eyebrow{color:#f1e3c4}
+.hc.bookq{border-top-color:var(--accent)}
+.hc.bookq figcaption{color:var(--muted)}
+.qb.book .tg,.qb.book cite{color:#7a5a2a}
+.storybox{background:#fff}
+/* session navigation: 이전/다음 + 서평 + 이 책 */
+.sn a{min-height:44px}
+.sn a small{font-size:.8125rem!important;opacity:1!important;color:var(--muted)}
+.sn .pn a b{display:block;font-family:var(--serif);font-size:.9375rem;line-height:1.4}
+.sn .rv a{display:flex;align-items:center;justify-content:center}
+.sn .bk a{display:inline-flex;align-items:center;min-height:44px;padding:6px 12px!important;color:var(--accent);font-weight:700;text-decoration:none}
+.sn .sx{margin-top:10px}
+@media(max-width:560px){
+  .sn .pn{grid-template-columns:1fr!important}
+  .sn .nx{text-align:left!important}
+  .sn .em{display:none}
+}
+/* full-bleed photo hero: match the 12px phone gutter set by each page's own mobile rule */
+@media(max-width:560px){.hero.photo{margin:0 -12px}}
