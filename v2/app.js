@@ -467,7 +467,8 @@
         h('p', { class: 'lh-tag' }, CFG.tagline || '책으로 삶을 읽다'),
         h('p', { class: 'trust' }, first + '년부터 모였습니다. ', h('br'), '함께 읽은 모든 책을 기록으로 남기지 못했지만, ', h('br'),
           '이곳에 그 일부인 ' + M + '권의 책과 ' + N + '번의 모임 기록이 담겨져 있습니다.')),
-      h('a', { class: 'lh-cr', href: 'https://unsplash.com/@woltss78', target: '_blank', rel: 'noopener' }, '사진: Nikolai Sidorov / Unsplash')));
+      h('div', { class: 'lh-ft' }, h('span', { class: 'lh-cp' }, '© 2026 BookLover(북클러버)'),
+        h('a', { class: 'lh-cr', href: 'https://unsplash.com/@woltss78', target: '_blank', rel: 'noopener' }, '사진: Nikolai Sidorov / Unsplash'))));
     if (cbs.length) {
       add(root, h('h2', { class: 'sec first' }, '이번 주 모임'));
       add(root, h('div', { class: 'week' }, cbs.map(function (c) {

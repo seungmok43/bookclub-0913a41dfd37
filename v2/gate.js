@@ -24,6 +24,23 @@
     }
   })();
 
+  // Copyright on every page: pages that already carry the full footer keep it; others get a compact one.
+  var C1 = '© 2026 BookLover(북클러버)', C2 = '정리 글·사진·디자인은 저작권의 보호를 받습니다. 인용한 책의 문장은 각 저자와 출판사에 저작권이 있습니다.';
+  function addCopy() {
+    var b = document.body;
+    if (!b || b.textContent.indexOf('© 2026 BookLover') >= 0) return;
+    var st2 = document.createElement('style');
+    st2.textContent = '.blk-copy{max-width:680px;margin:40px auto 0;padding:16px 18px 28px;border-top:1px solid rgba(128,128,128,.28);text-align:center;' +
+      'font-family:Pretendard,"Apple SD Gothic Neo","맑은 고딕",system-ui,sans-serif;color:#6B6459;line-height:1.6;word-break:keep-all;box-sizing:border-box}' +
+      '.blk-copy p{margin:0}.blk-copy .c1{font-size:14px;font-weight:600}.blk-copy .c2{font-size:13px;margin-top:2px}';
+    document.head.appendChild(st2);
+    var f = document.createElement('footer'); f.className = 'blk-copy';
+    var p1 = document.createElement('p'); p1.className = 'c1'; p1.textContent = C1;
+    var p2 = document.createElement('p'); p2.className = 'c2'; p2.textContent = C2;
+    f.appendChild(p1); f.appendChild(p2); b.appendChild(f);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', addCopy); else addCopy();
+
   if (acct()) return;
   var de = document.documentElement;
   de.classList.add('blk-gate');
@@ -45,6 +62,7 @@
     '#blk-gate .sw{display:block;margin:18px auto 0;min-height:48px;padding:0 20px;border:1px solid #8C2F39;border-radius:24px;background:#fff;color:#8C2F39;font:inherit;font-size:16px;font-weight:700;cursor:pointer}' +
     '#blk-gate .ms{font-size:15px;min-height:1.2em;color:#6B6459;margin:0}#blk-gate .ms.er{color:#b3261e}#blk-gate .ms.ok{color:#2f5e53;font-weight:700}' +
     '#blk-gate .ft{text-align:center;color:#6B6459;font-size:14px;margin-top:22px}' +
+    '#blk-gate .cp{text-align:center;color:#E9DCC4;font-size:13px;margin-top:14px;text-shadow:0 1px 4px rgba(0,0,0,.6)}' +
     // the home page's old-library photo behind the login card (self-hosted; credit on the home hero)
     '#blk-gate{background:linear-gradient(180deg,rgba(24,14,6,.50),rgba(20,11,4,.80)),url(' + ROOT + 'assets/img/hero-library-900.jpg) center 35%/cover no-repeat #2a1d12}' +
     '#blk-gate .br{color:#FBF4E6;text-shadow:0 2px 10px rgba(0,0,0,.5)}#blk-gate .tl,#blk-gate .ft{color:#F3E3C3;text-shadow:0 1px 6px rgba(0,0,0,.6)}';
@@ -139,7 +157,7 @@
     });
     var box = el('div', { id: 'blk-gate', role: 'main' }, [el('div', { class: 'gx' }, [
       el('p', { class: 'br' }, ['BooKLove']), el('p', { class: 'tl' }, ['책으로 삶을 읽는 북클럽 멤버 공간입니다.']),
-      lf, rf, sw, el('p', { class: 'ft' }, ['한 번 로그인하면 이 기기에서는 로그아웃할 때까지 다시 묻지 않습니다.'])])]);
+      lf, rf, sw, el('p', { class: 'ft' }, ['한 번 로그인하면 이 기기에서는 로그아웃할 때까지 다시 묻지 않습니다.']), el('p', { class: 'cp' }, [C1])])]);
     document.body.insertBefore(box, document.body.firstChild);
   }
   if (document.body) build(); else document.addEventListener('DOMContentLoaded', build);

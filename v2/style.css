@@ -229,7 +229,9 @@ button.slot{background:none;border:0;padding:0;font:inherit;cursor:pointer}
 .lh-brand{font-family:var(--serif);font-weight:700;font-size:2.5rem;line-height:1.1;letter-spacing:.01em;text-shadow:0 2px 12px rgba(0,0,0,.45)}
 .lh-tag{font-family:var(--serif);font-size:1.1875rem;margin:6px 0 14px;color:#F3E3C3;text-shadow:0 1px 8px rgba(0,0,0,.5)}
 .lhero .trust{margin:0;padding:0;border:0;text-align:left;font-size:1rem;line-height:1.7;color:#FBF4E6;text-shadow:0 1px 6px rgba(0,0,0,.55)}
-.lh-cr{position:absolute;right:10px;bottom:0;z-index:1;display:inline-flex;align-items:center;min-height:44px;padding:0 6px;font-size:13px;color:#E9DCC4;text-decoration:none;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+.lh-ft{position:absolute;left:0;right:0;bottom:0;z-index:1;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0 12px;padding:0 10px 0 20px;max-width:none}
+.lh-cp{font-size:13px;color:#D9C9AC;letter-spacing:.01em;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+.lh-cr{display:inline-flex;align-items:center;min-height:44px;padding:0 6px;font-size:13px;color:#E9DCC4;text-decoration:none;text-shadow:0 1px 4px rgba(0,0,0,.6);margin-left:auto}
 @media(min-width:700px){.lhero{height:62vh;max-height:560px}.lh-brand{font-size:3.25rem}.lhero .trust{font-size:1.125rem}.lh-in{bottom:56px}}
 /* 홈 화면에 추가 (install hint) */
 .ihint-box{margin-top:16px}
@@ -245,3 +247,4 @@ button.slot{background:none;border:0;padding:0;font:inherit;cursor:pointer}
 .ih-ic{width:40px;height:40px;border-radius:10px;background:#fff;border:1px solid var(--line);color:#2f6fd6;display:flex;align-items:center;justify-content:center}
 .ih-ic svg{width:24px;height:24px}
 .ih-go{margin-top:10px}
+@media(max-width:699px){.lh-in{bottom:82px}.lh-ft{padding-bottom:0}.lh-cp{flex-basis:100%}}
