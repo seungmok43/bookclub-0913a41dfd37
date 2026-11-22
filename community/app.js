@@ -74,6 +74,8 @@
     login_required: '로그인이 필요합니다. 다시 로그인해 주세요.',
     rate_limited: '짧은 시간에 글이 많이 올라왔어요. 잠시 후 다시 시도해 주세요.',
     invalid_input: '입력한 내용을 다시 확인해 주세요.',
+    pending_approval: '가입 신청이 접수되었습니다. 목사님 승인 후 로그인할 수 있습니다.',
+    not_approved: '가입이 승인되지 않았습니다. 모임 진행자에게 문의해 주세요.',
     not_found: '글을 찾을 수 없습니다.',
     network: '연결이 원활하지 않습니다. 잠시 후 다시 시도해 주세요.'
   };
@@ -644,7 +646,7 @@
       });
       root.appendChild(h('div', { class: 'card' }, h('div', { class: 'h2' }, '비밀번호 바꾸기'), f));
       root.appendChild(h('div', { class: 'sec' }, h('button', { class: 'btn ghost', type: 'button', onclick: function () {
-        Store.logout().then(function () { setAcc(null); location.hash = '#/'; });
+        Store.logout().then(function () { setAcc(null); location.hash = '#/'; location.reload(); });
       } }, '로그아웃')));
       return;
     }
@@ -683,7 +685,11 @@
         return null;
       }, function () {
         return Store.register('', cleanName(rn.value), rp.value);
-      }, finish);
+      }, function (res) {
+        // migrate_06 (가입 승인): a new sign-up waits for a host and gets no token.
+        if (res.pending || !res.token) { rn.value = rp.value = rp2.value = ''; rm.className = 'msg ok'; rm.textContent = ERR.pending_approval; return; }
+        finish(res);
+      });
     });
     root.appendChild(h('div', { class: 'card join' }, rf));
   }

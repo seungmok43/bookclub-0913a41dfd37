@@ -20,6 +20,9 @@
     login_required: '로그인이 필요합니다. 다시 로그인해 주세요.',
     rate_limited: '짧은 시간에 글이 많이 올라왔어요. 잠시 후 다시 시도해 주세요.',
     invalid_input: '입력한 내용을 다시 확인해 주세요.',
+    pending_approval: '가입 신청이 접수되었습니다. 목사님 승인 후 로그인할 수 있습니다.',
+    not_approved: '가입이 승인되지 않았습니다. 모임 진행자에게 문의해 주세요.',
+    not_host: '진행자만 할 수 있습니다.',
     network: '연결이 원활하지 않습니다. 잠시 후 다시 시도해 주세요.'
   };
 
@@ -385,7 +388,11 @@
         if (!cleanName(rn.value)) return ERR.invalid_name;
         if (rp.value.length < 4) return ERR.weak_password;
         return rp.value !== rp2.value ? '비밀번호가 서로 다릅니다.' : null;
-      }, function () { return rpc('register', { p_code: '', p_name: cleanName(rn.value), p_password: rp.value }); }, finish);
+      }, function () { return rpc('register', { p_code: '', p_name: cleanName(rn.value), p_password: rp.value }); }, function (res) {
+        // migrate_06 (가입 승인): a new sign-up waits for a host and gets no token.
+        if (res.pending || !res.token) { rn.value = rp.value = rp2.value = ''; rm.className = 'msg ok'; rm.textContent = ERR.pending_approval; return; }
+        finish(res);
+      });
     });
     add(wrap, [lf, h('p', { class: 'or' }, '처음이신가요? 한 번만 가입하면 됩니다.'), rf]);
     return wrap;
@@ -397,9 +404,9 @@
       var b = h('button', { class: 'btn ghost', type: 'button' }, '로그아웃');
       b.addEventListener('click', function () {
         b.disabled = true;
-        rpc('logout', { p_token: ACC.t }).then(function () { setAcc(null); route(); });
+        rpc('logout', { p_token: ACC.t }).then(function () { setAcc(null); location.hash = '#/'; location.reload(); });
       });
-      add(root, h('p', { class: 'sub' }, h('b', null, ACC.name), ' 이름으로 로그인되어 있습니다. 이 기기에서 로그아웃할 때까지 유지됩니다.'), b, m);
+      add(root, [h('p', { class: 'sub' }, h('b', null, ACC.name), ' 이름으로 로그인되어 있습니다. 이 기기에서 로그아웃할 때까지 유지됩니다.'), b, m]);
       myAccount(root);
       return;
     }
@@ -411,6 +418,7 @@
     var revBox = h('div', null, h('p', { class: 'empty' }, '불러오는 중…'));
     add(root, [h('h2', { class: 'sec' }, '출석'), attBox, h('h2', { class: 'sec' }, '내가 쓴 서평'), revBox]);
     myAtt().then(function (r) {
+      if (r && r.ok && r.is_host) hostApprovals(root);
       attBox.textContent = '';
       if (r && r.error === 'missing') { add(attBox, h('p', { class: 'empty' }, '출석체크는 준비 중입니다.')); return; }
       if (!r || !r.ok) { add(attBox, h('p', { class: 'empty' }, ERR[r && r.error] || ERR.network)); return; }
@@ -435,6 +443,37 @@
           h('div', null, h('div', { class: 't' }, b.title), h('div', { class: 'st', 'aria-label': x.rating + '점' }, stars(x.rating)),
             h('div', { class: 'h' }, x.one_liner || ''), h('div', { class: 'd' }, dot((x.created_at || '').slice(0, 10)))));
       })));
+    });
+  }
+  // 가입 승인 (hosts only; needs supabase/migrate_06_approval.sql — hidden until then)
+  function hostApprovals(root) {
+    rpc('m_host_pending', { p_token: ACC.t }).then(function (r) {
+      if (!r || !r.ok) return;
+      var box = h('div');
+      add(root, [h('h2', { class: 'sec' }, '가입 승인'), h('p', { class: 'secline' }, '진행자에게만 보입니다. 승인하면 그분이 바로 로그인할 수 있습니다.'), box]);
+      function draw(rows) {
+        box.textContent = '';
+        if (!rows.length) { add(box, h('p', { class: 'empty' }, '승인을 기다리는 가입 신청이 없습니다.')); return; }
+        add(box, h('div', { class: 'rows' }, rows.map(function (x) {
+          var msg = h('span', { class: 'msg', role: 'status' });
+          var ok = h('button', { class: 'btn sm', type: 'button' }, '승인');
+          var no = h('button', { class: 'btn sm ghost', type: 'button' }, '거절');
+          function act(approve) {
+            if (!approve && !window.confirm(x.name + ' 님의 가입 신청을 거절할까요?')) return;
+            ok.disabled = no.disabled = true;
+            rpc('m_host_approve', { p_token: ACC.t, p_member: x.id, p_approve: approve }).then(function (y) {
+              if (y && y.ok) { rows = rows.filter(function (z) { return z.id !== x.id; }); draw(rows); return; }
+              ok.disabled = no.disabled = false; msg.className = 'msg err'; msg.textContent = ERR[y && y.error] || ERR.network;
+            });
+          }
+          ok.addEventListener('click', function () { act(true); });
+          no.addEventListener('click', function () { act(false); });
+          return h('div', { class: 'row nocv' }, h('div', null, h('div', { class: 't' }, x.name),
+            h('div', { class: 'd' }, '신청 ' + dot(String(x.created_at || '').slice(0, 10))),
+            h('div', { class: 'att', style: 'margin-top:6px' }, ok, no, msg)));
+        })));
+      }
+      draw(r.rows || []);
     });
   }
   function viewReviews(root) {
