@@ -2,7 +2,8 @@
 """Bring every meeting-record page (<book>/<YYYY-MM-DD>/index.html) to the v2 look — re-runnable.
 
 What it changes, per page (page text is never touched):
-  1. <head>: one marked block that loads v2/session.css (v2 fonts, colours, 13px floor, 44px taps).
+  1. <head>: one marked block that loads v2/session.css (v2 fonts, colours, 13px floor, 44px taps)
+     and v2/gate.js (login first: members only see the page after logging in once on the device).
   2. end of <body>: one marked block that loads v2/toc.js (목차) and v2/session.js (가/가+, reading bar).
   3. the top 「←」 link now goes to the v2 book screen  ../../#/book/<slug>  (text: ← <book title>).
   4. the <nav class="sn"> block is rebuilt from community/catalog.js:
@@ -18,7 +19,8 @@ import json, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DAYS_OK = re.compile(r'^([a-z0-9-]+)/(\d{4}-\d{2}-\d{2})/$')
-HEAD = ('<!-- v2:head -->\n<link rel="stylesheet" href="../../v2/session.css">\n<!-- /v2:head -->\n')
+HEAD = ('<!-- v2:head -->\n<link rel="stylesheet" href="../../v2/session.css">\n'
+        '<script src="../../v2/gate.js"></script>\n<!-- /v2:head -->\n')
 TAIL = ('<!-- v2:tail -->\n<script src="../../v2/toc.js" defer></script>'
         '<script src="../../v2/session.js" defer></script>\n<!-- /v2:tail -->\n')
 
@@ -111,7 +113,7 @@ def main():
             continue
         t0 = open(path, encoding='utf-8').read()
         t = re.sub(r'<!-- v2:head -->.*?<!-- /v2:head -->\n?', '', t0, flags=re.S)
-        t = t.replace('</head>', '<!-- v2:head -->\n<link rel="stylesheet" href="../v2/bookpage.css">\n<!-- /v2:head -->\n</head>', 1)
+        t = t.replace('</head>', '<!-- v2:head -->\n<link rel="stylesheet" href="../v2/bookpage.css">\n<script src="../v2/gate.js"></script>\n<!-- /v2:head -->\n</head>', 1)
         t = t.replace(f'class="rvl" href="../community/#/book/{b["slug"]}"', f'class="rvl" href="../#/book/{b["slug"]}"')
         if t != t0:
             bchanged += 1

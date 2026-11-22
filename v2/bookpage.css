@@ -1,7 +1,7 @@
 /* BooKLove v2 — small fixes for the older one-page book summaries (<book>/index.html).
    Loaded last in <head> by tools/session_pass.py. Text floor 13px, taps 44px, v2 garnet accent. */
 :root{--accent:#8C2F39;--gold:#8C2F39;--fri:#6f5717}
-.eyebrow,.chap-no,.tag,.sess .snum .b{font-size:13px!important}
+.eyebrow,.chap-no,.tag,.sess .snum .b,.qlab{font-size:13px!important}
 a.back,a.rvl,a.slink{display:inline-flex;align-items:center;min-height:44px}
 a.back{padding:0 14px;border:1px solid var(--line,#E3DCCF);border-radius:22px;background:#fff;color:var(--ink,#23201B);font-size:15px}
 a.rvl{padding:0 14px!important;font-size:14px!important}
