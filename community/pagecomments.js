@@ -126,7 +126,7 @@
       '.blk-att .lnk{background:none;border:0;padding:0 6px;min-height:44px;color:#8C2F39;font-size:.875rem;cursor:pointer;text-decoration:underline}.blk-att .msg{font-size:.875rem;color:#8C2F39}' +
       '.blk-att .stp{display:inline-block;width:40px;height:40px}.blk-att .stp svg{width:100%;height:100%;display:block}.blk-att .stp.drop{animation:blkStamp .62s cubic-bezier(.25,.7,.3,1) both}' +
       '@keyframes blkStamp{0%{transform:translateY(-30px) scale(1.7);opacity:0}45%{opacity:1}62%{transform:translateY(0) scale(.9)}80%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}@media (prefers-reduced-motion:reduce){.blk-att .stp.drop{animation:none}}' +
-      '.blk-att .host{flex-basis:100%}.blk-att .hl{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px 12px;margin-top:8px}.blk-att .hl label{display:flex;gap:8px;align-items:center;min-height:44px;font-size:.9375rem}.blk-att .hl input{width:18px;height:18px}'));
+      '.blk-att .cal-lnk{display:inline-flex;align-items:center;min-height:44px;color:#8C2F39;font-weight:700;font-size:.9375rem;text-decoration:none}.blk-att .host{flex-basis:100%}.blk-att .hl{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px 12px;margin-top:8px}.blk-att .hl label{display:flex;gap:8px;align-items:center;min-height:44px;font-size:.9375rem}.blk-att .hl input{width:18px;height:18px}'));
     var bar = h('section', { class: 'blk-att', 'aria-label': '출석' });
     bar.hidden = true;
     host.insertBefore(bar, box);
@@ -149,9 +149,12 @@
           });
         }
         if (row) {
-          if (just) { just = false; var st = h('span', { class: 'stp drop', 'aria-hidden': 'true' }); st.innerHTML = STAMP; bar.appendChild(st); }
-          bar.appendChild(h('span', null, '✓ 이 모임에 함께했습니다.'));
-          if (row.undo_ok) { var u = h('button', { class: 'lnk', type: 'button' }, '출석 취소'); u.addEventListener('click', function () { act('m_undo_check_in', u); }); bar.appendChild(u); }
+          // Attended: no lingering confirmation line (cancelling lives in the 내 계정 calendar sheet).
+          // Right after a check-in: the stamp moment and a link to the calendar.
+          if (just) {
+            just = false; var st = h('span', { class: 'stp drop', 'aria-hidden': 'true' }); st.innerHTML = STAMP; bar.appendChild(st);
+            bar.appendChild(h('a', { class: 'cal-lnk', href: COMMUNITY.replace(/community\/$/, '') + '#/account' }, '내 출석 달력 보기 →'));
+          } else if (!r.is_host) { bar.hidden = true; return; }
         } else {
           var b = h('button', { class: 'btn', type: 'button' }, '출석');
           b.addEventListener('click', function () { act('m_check_in', b); });

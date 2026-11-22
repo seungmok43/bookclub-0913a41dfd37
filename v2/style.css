@@ -208,3 +208,15 @@ h3.sub3{font-family:var(--serif);font-size:1.0625rem;margin:22px 0 8px}
 .cdot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#c9a96a;opacity:.55;margin-top:6px}
 .clg{display:flex;align-items:center;gap:8px;font-size:.8125rem;color:var(--muted);margin:8px 2px 0}
 .clg .cdot{margin:0}
+/* 출석 취소 (in the day sheet only) */
+.cundo{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin-top:6px}
+.ulnk,.uq{min-height:44px;min-width:44px;padding:0 10px;border:0;background:none;font:inherit;font-size:.875rem;color:#9b3a32;cursor:pointer}
+.ulnk{padding:0 2px;text-decoration:underline;text-underline-offset:3px}
+.uqt{font-size:.875rem;color:var(--muted)}
+.uq{border:1px solid #d9b3ad;border-radius:22px;background:#fff}
+.uq.yes{background:#9b3a32;border-color:#9b3a32;color:#fff;font-weight:700}
+.uq:disabled{opacity:.5}
+.lift .stp,.lift .ccv,.lift .cfb,.slot.lift .stp{animation:blkLift .42s ease-in forwards}
+@keyframes blkLift{0%{transform:none;opacity:1}100%{transform:translateY(-26px) scale(1.35) rotate(-6deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){.lift .stp,.lift .ccv,.lift .cfb{animation:none}}
+button.slot{background:none;border:0;padding:0;font:inherit;cursor:pointer}

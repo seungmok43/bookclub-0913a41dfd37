@@ -115,9 +115,10 @@
           });
         }
         if (row) {
-          if (JUST === slug + '|' + date) { inkDefs(); add(bar, stampSvg({ book_slug: slug, date: date }, 'drop tiny')); }
-          add(bar, h('span', { class: 'ok' }, '✓ ' + dot(date) + ' 모임에 함께했습니다'));
-          if (row.undo_ok) { var u = h('button', { class: 'lnk', type: 'button' }, '취소'); u.addEventListener('click', function () { act('m_undo_check_in', u); }); add(bar, u); }
+          // Attended: no confirmation line here (cancelling lives in the calendar / 도장판 sheet).
+          // Right after a check-in, only the stamp moment shows.
+          if (JUST !== slug + '|' + date) { bar.hidden = true; return; }
+          inkDefs(); add(bar, stampSvg({ book_slug: slug, date: date }, 'drop tiny'));
         } else {
           var b = h('button', { class: 'btn sm', type: 'button' }, '출석');
           b.addEventListener('click', function () { act('m_check_in', b); });
@@ -200,9 +201,10 @@
       if (x) {
         var key = x.book_slug + '|' + x.date;
         var s = stampSvg(x, key === JUST ? 'drop' : '');
-        var sess = sessOf(x);
-        add(grid, h('a', { class: 'slot on', href: sess ? BASE + sess.href : '#/book/' + x.book_slug, title: (BY[x.book_slug] ? BY[x.book_slug].title : x.book_slug) + ' · ' + dot(x.date) },
-          s, h('span', { class: 'sd' }, x.date.slice(5).replace('-', '.'))));
+        var sb = h('button', { class: 'slot on', type: 'button', 'data-k': key, 'aria-label': (BY[x.book_slug] ? BY[x.book_slug].title : x.book_slug) + ' · ' + dot(x.date) + ' 출석' },
+          s, h('span', { class: 'sd' }, x.date.slice(5).replace('-', '.')));
+        sb.addEventListener('click', (function (dd, el) { return function () { openSheet(all.filter(function (z) { return z.date === dd; }), el); }; })(x.date, sb));
+        add(grid, sb);
       } else add(grid, h('span', { class: 'slot' }, h('span', { class: 'ring', 'aria-hidden': 'true' }, String(i + 1))));
     }
     add(card, grid);
@@ -225,6 +227,61 @@
     });
     return out;
   }
+  // Day sheet (from a calendar cover day or a 도장판 stamp): book, N회, date, record link,
+  // and 「출석 취소」 only while the server allows it (undo_ok, same rule as before), with an inline confirm.
+  var closeSheet = function () { };
+  function reduceMotion() { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }
+  function openSheet(list, from) {
+    closeSheet();
+    if (!list.length) return;
+    var day = list[0].date;
+    var sh = h('div', { class: 'csheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': dot(day) + ' 출석' });
+    var close = h('button', { class: 'cx', type: 'button', 'aria-label': '닫기' }, '×');
+    add(sh, h('div', { class: 'csh' }, h('b', null, dot(day) + ' (' + dayLabel(list[0]).charAt(0) + ')'), close));
+    list.forEach(function (x) {
+      var b = BY[x.book_slug], s = sessOf(x), key = x.book_slug + '|' + x.date;
+      var undo = null;
+      if (x.undo_ok && ACC) {
+        undo = h('div', { class: 'cundo' });
+        var msg = h('span', { class: 'msg err', role: 'status' });
+        var ask = function () {
+          undo.textContent = '';
+          var yes = h('button', { class: 'uq yes', type: 'button' }, '취소하기');
+          var no = h('button', { class: 'uq', type: 'button' }, '그대로 두기');
+          no.addEventListener('click', function () { idle(); });
+          yes.addEventListener('click', function () {
+            yes.disabled = no.disabled = true;
+            rpc('m_undo_check_in', { p_token: ACC.t, p_book_slug: x.book_slug, p_date: x.date }).then(function (r) {
+              if (!(r && r.ok)) { yes.disabled = no.disabled = false; msg.textContent = AERR[r && r.error] || ERR[r && r.error] || ERR.network; return; }
+              var els = document.querySelectorAll('[data-k="' + key + '"]');
+              [].forEach.call(els, function (e) { e.classList.add('lift'); });
+              setTimeout(function () { closeSheet(); attCache = null; attPainters.forEach(function (f) { f(); }); }, reduceMotion() ? 0 : 420);
+            });
+          });
+          add(undo, [h('span', { class: 'uqt' }, '취소할까요?'), yes, no, msg]);
+        };
+        var idle = function () {
+          undo.textContent = '';
+          var u = h('button', { class: 'ulnk', type: 'button' }, '출석 취소');
+          u.addEventListener('click', ask);
+          add(undo, u);
+        };
+        idle();
+      }
+      add(sh, h('div', { class: 'cone' }, b ? cover(b) : null,
+        h('div', null, h('div', { class: 't' }, b ? b.title : x.book_slug),
+          h('div', { class: 'd' }, (s ? s.round + '회 · ' : '') + dot(day) + ' 모임에 함께했습니다'),
+          h('a', { class: 'btn sm', href: s ? BASE + s.href : '#/book/' + x.book_slug }, s ? '그날 기록 읽기' : '책 보기'),
+          undo)));
+    });
+    var bg = h('div', { class: 'cback' });
+    function done() { closeSheet(); if (from && from.isConnected) from.focus(); }
+    close.addEventListener('click', done); bg.addEventListener('click', done);
+    function escKey(e) { if (e.key === 'Escape') done(); }
+    document.addEventListener('keydown', escKey);
+    closeSheet = function () { document.removeEventListener('keydown', escKey); if (bg.parentNode) bg.remove(); if (sh.parentNode) sh.remove(); closeSheet = function () { }; };
+    document.body.appendChild(bg); document.body.appendChild(sh); close.focus();
+  }
   var CAL = null;   // { y, m } — month shown, kept while the screen repaints
   function calendar(rows) {
     var today = kstToday(), md = meetDays();
@@ -241,30 +298,8 @@
     var next = h('button', { class: 'cnav', type: 'button', 'aria-label': '다음 달' }, '›');
     var head = h('div', { class: 'chd' }, prev, title, next);
     var grid = h('div', { class: 'cgrid' });
-    var closeSheet = function () { };
     var legend = Object.keys(md).length ? h('p', { class: 'clg' }, h('span', { class: 'cdot', 'aria-hidden': 'true' }), '다가오는 모임 날 (' + Object.keys(md).map(function (k) { return md[k]; }).join(' · ') + ')') : null;
     add(box, [head, h('div', { class: 'cwk', 'aria-hidden': 'true' }, ['일', '월', '화', '수', '목', '금', '토'].map(function (w, i) { return h('span', { class: i === 0 ? 'sun' : '' }, w); })), grid, legend]);
-    function show(day, from) {
-      closeSheet();
-      var list = byDay[day] || [];
-      var sh = h('div', { class: 'csheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': dot(day) + ' 출석' });
-      var close = h('button', { class: 'cx', type: 'button', 'aria-label': '닫기' }, '×');
-      add(sh, h('div', { class: 'csh' }, h('b', null, dot(day) + ' (' + (list[0] ? dayLabel(list[0]).charAt(0) : '') + ')'), close));
-      list.forEach(function (x) {
-        var b = BY[x.book_slug], s = sessOf(x);
-        add(sh, h('div', { class: 'cone' }, b ? cover(b) : null,
-          h('div', null, h('div', { class: 't' }, b ? b.title : x.book_slug),
-            h('div', { class: 'd' }, (s ? s.round + '회 · ' : '') + dot(day) + ' 모임에 함께했습니다'),
-            h('a', { class: 'btn sm', href: s ? BASE + s.href : '#/book/' + x.book_slug }, s ? '그날 기록 읽기' : '책 보기'))));
-      });
-      var bg = h('div', { class: 'cback' });
-      function done() { closeSheet(); if (from) from.focus(); }
-      close.addEventListener('click', done); bg.addEventListener('click', done);
-      document.addEventListener('keydown', escKey);
-      function escKey(e) { if (e.key === 'Escape') done(); }
-      closeSheet = function () { document.removeEventListener('keydown', escKey); if (bg.parentNode) bg.remove(); if (sh.parentNode) sh.remove(); closeSheet = function () { }; };
-      document.body.appendChild(bg); document.body.appendChild(sh); close.focus();
-    }
     function draw() {
       var y = CAL.y, m = CAL.m, idx = y * 12 + m;
       title.textContent = y + '년 ' + (m + 1) + '월';
@@ -279,9 +314,9 @@
           var x = hit[0], key = x.book_slug + '|' + x.date, bk = BY[x.book_slug];
           var face = bk && bk.cover ? h('img', { class: 'ccv', src: BASE + bk.cover, alt: '', loading: 'lazy' })
             : h('span', { class: 'cfb' }, stampSvg(x, '', shortTitle(bk) || '출석'));
-          var bt = h('button', { class: cls + ' hit', type: 'button', 'aria-label': dot(ds) + ' ' + hit.map(function (z) { return BY[z.book_slug] ? BY[z.book_slug].title : z.book_slug; }).join(', ') + ' 출석' },
+          var bt = h('button', { class: cls + ' hit', type: 'button', 'data-k': key, 'aria-label': dot(ds) + ' ' + hit.map(function (z) { return BY[z.book_slug] ? BY[z.book_slug].title : z.book_slug; }).join(', ') + ' 출석' },
             face, h('span', { class: 'n' }, String(d)), bk && bk.cover ? stampSvg(x, 'mark' + (key === JUST ? ' drop' : '')) : null);
-          bt.addEventListener('click', (function (dd, el) { return function () { show(dd, el); }; })(ds, bt));
+          bt.addEventListener('click', (function (dd, el) { return function () { openSheet(byDay[dd] || [], el); }; })(ds, bt));
           add(grid, bt);
         } else {
           var up = ds >= today && md.hasOwnProperty(wd);
@@ -681,7 +716,7 @@
   function route() {
     var parts = location.hash.replace(/^#\/?/, '').split('/').map(function (x) { try { return decodeURIComponent(x); } catch (e) { return x; } });
     var root = document.getElementById('app'); root.textContent = ''; attPainters = [];
-    [].forEach.call(document.querySelectorAll('.csheet,.cback'), function (e) { e.remove(); });
+    closeSheet();
     var tab = parts[0] === 'library' || parts[0] === 'book' ? 'library' : parts[0] === 'reviews' ? 'reviews' : parts[0] === 'account' ? 'account' : 'home';
     [].forEach.call(document.querySelectorAll('[data-tab]'), function (a) { a.classList.toggle('on', a.getAttribute('data-tab') === tab); });
     if (parts[0] === 'library') viewLibrary(root, parts[1] === 'date');
