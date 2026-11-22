@@ -112,6 +112,51 @@
   }
   load();
 
+  // 출석 (attendance) for this meeting: logged-in members only, meeting date within the last 60 days.
+  // Needs supabase/migrate_05_attendance.sql. Until that RPC exists the block stays hidden (404 → nothing shown).
+  (function () {
+    var m = /^([a-z0-9-]{1,40})\/(\d{4}-\d{2}-\d{2})$/.exec(PAGE), me = acc();
+    if (!m || !me) return;
+    var slug = m[1], date = m[2];
+    var today = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
+    var dd = Math.round((Date.parse(today) - Date.parse(date)) / 864e5);
+    if (!(dd >= -1 && dd <= 60)) return;
+    document.head.appendChild(h('style', null, '.blk-att{margin:22px auto 0;max-width:680px;padding:12px 14px;border:1px solid rgba(128,128,128,.28);border-radius:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:.92rem}' +
+      '.blk-att .btn{border:0;border-radius:10px;background:#8C2F39;color:#fff;font-weight:700;padding:9px 16px;font-size:.92rem;cursor:pointer}.blk-att .btn:disabled{opacity:.5}' +
+      '.blk-att .lnk{background:none;border:0;padding:0;color:#8C2F39;font-size:.82rem;cursor:pointer;text-decoration:underline}.blk-att .msg{font-size:.85rem;color:#8C2F39}'));
+    var bar = h('section', { class: 'blk-att', 'aria-label': '출석' });
+    bar.hidden = true;
+    host.insertBefore(bar, box);
+    var AERR = { rate_limited: ERR.rate_limited, login_required: ERR.login_required, invalid_input: '이 모임은 지금 출석할 수 없습니다.', too_late: '출석 취소는 출석한 날에만 할 수 있습니다.' };
+    function paint() {
+      rpc('m_my_attendance', { p_token: me.t }).then(function (r) {
+        bar.textContent = '';
+        if (!r || !r.ok) { bar.hidden = true; return; }
+        var row = (r.rows || []).filter(function (x) { return x.book_slug === slug && x.date === date; })[0];
+        var msg = h('span', { class: 'msg', role: 'status' });
+        function act(name, b) {
+          b.disabled = true;
+          rpc(name, { p_token: me.t, p_book_slug: slug, p_date: date }).then(function (x) {
+            b.disabled = false;
+            if (x && x.ok) { paint(); return; }
+            msg.textContent = AERR[(x && x.error)] || ERR.network;
+          });
+        }
+        if (row) {
+          bar.appendChild(h('span', null, '✓ 이 모임에 함께했습니다.'));
+          if (row.undo_ok) { var u = h('button', { class: 'lnk', type: 'button' }, '출석 취소'); u.addEventListener('click', function () { act('m_undo_check_in', u); }); bar.appendChild(u); }
+        } else {
+          var b = h('button', { class: 'btn', type: 'button' }, '출석');
+          b.addEventListener('click', function () { act('m_check_in', b); });
+          bar.appendChild(h('span', null, '이 모임에 함께하셨나요?')); bar.appendChild(b);
+        }
+        bar.appendChild(msg);
+        bar.hidden = false;
+      });
+    }
+    paint();
+  })();
+
   // Footer nav: fill 「이 책의 서평 N건 보기」 with the live count (text only).
   Array.prototype.forEach.call(document.querySelectorAll('[data-blk-reviews]'), function (el) {
     var slug = el.getAttribute('data-blk-reviews');

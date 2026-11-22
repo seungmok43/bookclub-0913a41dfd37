@@ -115,3 +115,14 @@ h2.sec{font-family:var(--serif);font-size:21px;margin:38px 0 4px}
  .grid{grid-template-columns:repeat(2,1fr)}
  h1.pg{font-size:24px}
 }
+
+.copy{margin:40px auto 96px;padding-top:18px;border-top:1px solid var(--line,#e5dccb);font-size:12.5px;line-height:1.7;color:var(--mut,#7a7264);text-align:center}
+.copy p{margin:0 0 4px}
+
+/* now-reading card + attendance (출석) */
+.nowi{display:flex;flex-direction:column;gap:8px}.nowi .nowc{flex:1}
+.att{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;font-size:14px;color:var(--muted)}
+.att .ok{color:var(--wed);font-weight:700}
+.att .lnk{background:none;border:0;padding:0;font:inherit;font-size:13px;color:var(--accent);text-decoration:underline;cursor:pointer}
+.btn.sm{font-size:14px;padding:7px 16px}
+.row .st{color:var(--accent);letter-spacing:1px;font-size:13px}

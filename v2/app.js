@@ -5,6 +5,8 @@
 (function () {
   'use strict';
   var CFG = window.BOOKLOVE_CONFIG || {};
+  // Site root relative to the page: '' when served at the site root (index.html), '../' for /v2/.
+  var BASE = typeof window.BLK_BASE === 'string' ? window.BLK_BASE : '../';
   var BOOKS = (window.V2_DATA || { books: [] }).books;
   var GR = window.V2_GROUPS || { groups: [], forWhom: {}, draft: true };
   var BY = {}; BOOKS.forEach(function (b) { BY[b.slug] = b; });
@@ -39,12 +41,12 @@
   function lget(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function lset(k, v) { try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch (e) { } }
   var ACC = (function () { try { var a = JSON.parse(lget(ACC_KEY)); return a && a.t && a.id ? a : null; } catch (e) { return null; } })();
-  function setAcc(a) { ACC = a; lset(ACC_KEY, a ? JSON.stringify(a) : ''); }
+  function setAcc(a) { ACC = a; attCache = null; lset(ACC_KEY, a ? JSON.stringify(a) : ''); }
   function cleanName(v) { return (v || '').replace(/\s+/g, ' ').trim().slice(0, NAME_MAX); }
   function dot(d) { return d.replace(/-/g, '.'); }
   function stars(n) { n = Math.round(n); return '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n); }
   function cover(b) {
-    if (b.cover) return h('div', { class: 'cv' }, h('img', { src: '../' + b.cover, alt: b.title + ' 표지', loading: 'lazy' }));
+    if (b.cover) return h('div', { class: 'cv' }, h('img', { src: BASE + b.cover, alt: b.title + ' 표지', loading: 'lazy' }));
     return h('div', { class: 'cv dz', style: '--t:' + (b.tone || '#3d5a4a') }, h('b', null, b.title), h('small', null, b.author));
   }
   function allSessions() {
@@ -63,12 +65,12 @@
     var hd = { apikey: CFG.supabaseAnonKey, Authorization: 'Bearer ' + CFG.supabaseAnonKey };
     if (body) hd['Content-Type'] = 'application/json';
     return fetch(CFG.supabaseUrl.replace(/\/$/, '') + path, { method: body ? 'POST' : 'GET', headers: hd, body: body ? JSON.stringify(body) : undefined })
-      .then(function (r) { return r.json().catch(function () { return null; }).then(function (j) { if (!r.ok) throw new Error('http ' + r.status); return j; }); });
+      .then(function (r) { return r.json().catch(function () { return null; }).then(function (j) { if (!r.ok) { var e = new Error('http ' + r.status); e.status = r.status; throw e; } return j; }); });
   }
   function rpc(name, body) {
     if (!LIVE) return Promise.resolve({ ok: false, error: 'network' });
     return api('/rest/v1/rpc/' + name, body).then(function (j) { return j && typeof j === 'object' ? j : { ok: false, error: 'network' }; },
-      function () { return { ok: false, error: 'network' }; });
+      function (e) { return { ok: false, error: e && e.status === 404 ? 'missing' : 'network' }; });
   }
   var revCache = null;
   function reviews() {
@@ -77,6 +79,54 @@
       .catch(function () { revCache = null; return null; });
     return revCache;
   }
+  // ---------- attendance (출석) ----------
+  // Needs supabase/migrate_05_attendance.sql. Until the RPC exists it answers 404 ('missing'):
+  // buttons stay hidden and the account screen says 「준비 중」.
+  var attCache = null, attPainters = [];   // painters: every 출석 bar on the current screen
+  function myAtt() {
+    if (!ACC) return Promise.resolve(null);
+    if (!attCache) attCache = rpc('m_my_attendance', { p_token: ACC.t });
+    return attCache;
+  }
+  function kstToday() { return new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10); }
+  var AERR = { invalid_input: '이 모임은 지금 출석할 수 없습니다.', too_late: '출석 취소는 출석한 날에만 할 수 있습니다.' };
+  function attendBar(slug, date) {
+    var bar = h('div', { class: 'att' }); bar.hidden = true;
+    var dd = Math.round((Date.parse(kstToday()) - Date.parse(date)) / 864e5);
+    if (!ACC || !LIVE || !(dd >= -1 && dd <= 60)) return bar;
+    function paint() {
+      myAtt().then(function (r) {
+        bar.textContent = '';
+        if (!r || !r.ok) { if (r && r.error === 'login_required') setAcc(null); bar.hidden = true; return; }
+        var row = (r.rows || []).filter(function (x) { return x.book_slug === slug && x.date === date; })[0];
+        var msg = h('span', { class: 'msg', role: 'status' });
+        function act(name, b) {
+          b.disabled = true;
+          rpc(name, { p_token: ACC.t, p_book_slug: slug, p_date: date }).then(function (x) {
+            b.disabled = false;
+            if (x && x.ok) { attCache = null; attPainters.forEach(function (f) { f(); }); return; }
+            msg.className = 'msg err'; msg.textContent = AERR[x && x.error] || ERR[x && x.error] || ERR.network;
+          });
+        }
+        if (row) {
+          add(bar, h('span', { class: 'ok' }, '✓ ' + dot(date) + ' 모임에 함께했습니다'));
+          if (row.undo_ok) { var u = h('button', { class: 'lnk', type: 'button' }, '취소'); u.addEventListener('click', function () { act('m_undo_check_in', u); }); add(bar, u); }
+        } else {
+          var b = h('button', { class: 'btn sm', type: 'button' }, '출석');
+          b.addEventListener('click', function () { act('m_check_in', b); });
+          add(bar, [h('span', null, dot(date) + ' 모임에 함께하셨나요?'), b]);
+        }
+        add(bar, msg); bar.hidden = false;
+      });
+    }
+    attPainters.push(paint); paint();
+    return bar;
+  }
+  function latestOpen(b) {
+    var ss = (b && b.sessions || []).filter(function (s) { return !s.locked; }).sort(function (x, y) { return x.date < y.date ? 1 : -1; });
+    return ss[0] || null;
+  }
+
   function revCard(r, withBook, short) {
     var b = BY[r.book_slug];
     return h('div', { class: 'rv' },
@@ -103,7 +153,7 @@
     var when = dot(s.date) + ' (' + s.day + ') · ' + s.round + '회';
     if (s.locked) return h('div', { class: 'row nocv locked' },
       h('div', null, showBook ? h('div', { class: 't' }, b.title) : null, h('div', { class: 'h' }, '🔒 이 기록은 모임 안에서만 열립니다.'), h('div', { class: 'd' }, when)));
-    return h('a', { class: 'row nocv', href: '../' + s.href },
+    return h('a', { class: 'row nocv', href: BASE + s.href },
       h('div', null, showBook ? h('div', { class: 't' }, b.title) : null, h('div', { class: 'h' }, s.hook), h('div', { class: 'd' }, when + ' · 기록 읽기 →')));
   }
 
@@ -115,7 +165,8 @@
       h('div', null, h('div', { class: 'eb' }, '이번 주 기록'), h('h2', null, top.b.title),
         h('div', { class: 'when' }, dot(top.s.date) + ' (' + top.s.day + ') · ' + top.s.round + '회')),
       h('p', { class: 'hook' }, top.s.hook),
-      h('div', { class: 'go' }, h('a', { class: 'btn', href: '../' + top.s.href }, '읽기'))));
+      h('div', { class: 'go' }, h('a', { class: 'btn', href: BASE + top.s.href }, '읽기')),
+      h('div', { class: 'go' }, attendBar(top.b.slug, top.s.date))));
 
     var cbs = CFG.currentBooks || (CFG.currentBook ? [CFG.currentBook] : []);
     if (cbs.length) {
@@ -123,9 +174,11 @@
       add(root, h('div', { class: 'now' }, cbs.map(function (c) {
         var b = BY[c.slug] || { slug: c.slug, title: c.title, author: c.author, cover: (c.cover || ''), tone: '' };
         var fri = /금/.test(c.group || '');
-        return h('a', { class: 'nowc', href: '#/book/' + c.slug }, cover(b),
+        var last = latestOpen(BY[c.slug]);
+        return h('div', { class: 'nowi' }, h('a', { class: 'nowc', href: '#/book/' + c.slug }, cover(b),
           h('div', null, h('span', { class: 'g ' + (fri ? 'f' : 'w') }, c.group || ''), h('b', null, c.title || b.title),
-            h('span', { class: 'm' }, c.author || b.author), c.nextMeeting ? h('span', { class: 'm' }, '다음 모임 · ' + c.nextMeeting) : null));
+            h('span', { class: 'm' }, c.author || b.author), c.nextMeeting ? h('span', { class: 'm' }, '다음 모임 · ' + c.nextMeeting) : null)),
+          last ? attendBar(c.slug, last.date) : null);
       })));
     }
 
@@ -149,7 +202,7 @@
     var all = allSessions();
     var N = all.length, M = BOOKS.filter(function (b) { return b.sessions.length > 0; }).length;
     var first = all.length ? all[all.length - 1].s.date.slice(0, 4) : '';
-    add(root, h('p', { class: 'trust' }, first + '년부터 ' + N + '번 모였고, ' + M + '권을 함께 읽었습니다'));
+    add(root, h('p', { class: 'trust' }, first + '년부터 모였습니다. 함께 읽은 모든 책을 기록으로 남기지 못했지만, 이곳에 그 일부인 ' + M + '권의 책과 ' + N + '번의 모임 기록이 담겨져 있습니다.'));
 
     add(root, h('h2', { class: 'sec' }, '최근 서평'));
     var rb = h('div', null, h('p', { class: 'empty' }, '불러오는 중…'));
@@ -218,7 +271,7 @@
     if (!b) { add(root, h('p', { class: 'empty' }, '책을 찾을 수 없습니다.'), h('a', { class: 'more', href: '#/library' }, '함께 읽은 책으로 →')); return; }
     add(root, h('div', { class: 'bhead' }, cover(b), h('div', null, h('h1', null, b.title), h('div', { class: 'a' }, b.author),
       h('div', { class: 'a' }, b.period + (b.sessions.length ? ' · 모임 ' + b.sessions.length + '회' : '')),
-      h('a', { class: 'blink', href: '../' + b.href }, '이 책 정리 페이지 →'))));
+      h('a', { class: 'blink', href: BASE + b.href }, '이 책 정리 페이지 →'))));
     if (b.hook) add(root, h('p', { class: 'bone' }, b.hook));
     var fw = (GR.forWhom || {})[slug];
     if (fw) add(root, h('div', { class: 'who' }, h('b', null, '이런 분께 '), fw, GR.draft ? h('span', { class: 'tag' }, '초안') : null));
@@ -327,10 +380,42 @@
         rpc('logout', { p_token: ACC.t }).then(function () { setAcc(null); route(); });
       });
       add(root, h('p', { class: 'sub' }, h('b', null, ACC.name), ' 이름으로 로그인되어 있습니다. 이 기기에서 로그아웃할 때까지 유지됩니다.'), b, m);
+      myAccount(root);
       return;
     }
     add(root, h('p', { class: 'sub' }, '기록은 누구나 읽을 수 있고, 서평은 로그인한 멤버만 남길 수 있습니다.'));
     add(root, accountForms(function () { route(); }));
+  }
+  function myAccount(root) {
+    var attBox = h('div', null, h('p', { class: 'empty' }, '불러오는 중…'));
+    var revBox = h('div', null, h('p', { class: 'empty' }, '불러오는 중…'));
+    add(root, [h('h2', { class: 'sec' }, '출석'), attBox, h('h2', { class: 'sec' }, '내가 쓴 서평'), revBox]);
+    myAtt().then(function (r) {
+      attBox.textContent = '';
+      if (r && r.error === 'missing') { add(attBox, h('p', { class: 'empty' }, '출석체크는 준비 중입니다.')); return; }
+      if (!r || !r.ok) { add(attBox, h('p', { class: 'empty' }, ERR[r && r.error] || ERR.network)); return; }
+      var rows = r.rows || [], y = kstToday().slice(0, 4);
+      var n = rows.filter(function (x) { return String(x.date).slice(0, 4) === y; }).length;
+      add(attBox, h('p', { class: 'secline' }, n ? '올해 ' + n + '번 함께했습니다.' : '올해는 아직 출석 기록이 없습니다.'));
+      if (rows.length) add(attBox, h('div', { class: 'rows' }, rows.map(function (x) {
+        var b = BY[x.book_slug], s = b && b.sessions.filter(function (z) { return z.date === x.date && !z.locked; })[0];
+        return h('a', { class: 'row nocv', href: s ? BASE + s.href : '#/book/' + x.book_slug },
+          h('div', null, h('div', { class: 't' }, b ? b.title : x.book_slug), h('div', { class: 'd' }, dot(String(x.date)) + (s ? ' · ' + s.round + '회 기록 →' : ''))));
+      })));
+    });
+    reviews().then(function (rows) {
+      revBox.textContent = '';
+      if (rows == null) { add(revBox, h('p', { class: 'empty' }, ERR.network)); return; }
+      var mine = rows.filter(function (x) { return x.member_id === ACC.id; });   // already newest first
+      if (!mine.length) { add(revBox, h('p', { class: 'empty' }, '아직 남긴 서평이 없습니다. 함께 읽은 책에서 서평을 남겨 보세요.')); return; }
+      add(revBox, h('p', { class: 'secline' }, '서평 ' + mine.length + '편'));
+      add(revBox, h('div', { class: 'rows' }, mine.map(function (x) {
+        var b = BY[x.book_slug] || { slug: x.book_slug, title: x.book_slug, author: '', cover: '', tone: '' };
+        return h('a', { class: 'row', href: '#/book/' + b.slug }, cover(b),
+          h('div', null, h('div', { class: 't' }, b.title), h('div', { class: 'st', 'aria-label': x.rating + '점' }, stars(x.rating)),
+            h('div', { class: 'h' }, x.one_liner || ''), h('div', { class: 'd' }, dot((x.created_at || '').slice(0, 10)))));
+      })));
+    });
   }
   function viewReviews(root) {
     add(root, h('h1', { class: 'pg' }, '서평'));
@@ -343,7 +428,7 @@
   // ---------- router ----------
   function route() {
     var parts = location.hash.replace(/^#\/?/, '').split('/').map(function (x) { try { return decodeURIComponent(x); } catch (e) { return x; } });
-    var root = document.getElementById('app'); root.textContent = '';
+    var root = document.getElementById('app'); root.textContent = ''; attPainters = [];
     var tab = parts[0] === 'library' || parts[0] === 'book' ? 'library' : parts[0] === 'reviews' ? 'reviews' : parts[0] === 'account' ? 'account' : 'home';
     [].forEach.call(document.querySelectorAll('[data-tab]'), function (a) { a.classList.toggle('on', a.getAttribute('data-tab') === tab); });
     if (parts[0] === 'library') viewLibrary(root, parts[1] === 'date');

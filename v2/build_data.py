@@ -3,7 +3,7 @@
 
 Sources (existing text only — no new prose):
   community/catalog.js      books, sessions (date, day, round, href)
-  index.html  const BOOKS   hub one-liner `s`, days `d`, period `p`, tone, cover override
+  v1/index.html  const BOOKS  (old hub, moved from the root)   hub one-liner `s`, days `d`, period `p`, tone, cover override
   <book>/index.html         cover image actually shown on the book page
   <session>/index.html      hook = p.oneliner or div.lead (tags stripped), subheads = h2/h3 text
 
@@ -35,9 +35,9 @@ def catalog():
 
 
 def hub_books():
-    m = re.search(r'const BOOKS=(\[.*?\]);\n', read('index.html'), re.S)
+    m = re.search(r'const BOOKS=(\[.*?\]);\n', read('v1/index.html'), re.S)
     if not m:
-        sys.exit('index.html: const BOOKS not found')
+        sys.exit('v1/index.html: const BOOKS not found')
     return {b['slug'].strip('/'): b for b in json.loads(m.group(1))}
 
 
