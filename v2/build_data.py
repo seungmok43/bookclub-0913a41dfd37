@@ -7,13 +7,15 @@ Sources (existing text only — no new prose):
   <book>/index.html         cover image actually shown on the book page
   <session>/index.html      hook = p.oneliner or div.lead (tags stripped), subheads = h2/h3 text
 
-Locked sessions (mom 07-31 / 08-14 / 08-21) are never opened: listed with locked=true and no hook.
+Locked sessions would be listed with locked=true and no hook. Since 2026-11-22 there are none:
+the three mom pages (07-31 / 08-14 / 08-21) are open pages; the old key-locked files are kept as
+mom/<date>/index_locked_archive.html and are not read here.
 Usage:  python3 v2/build_data.py      (run from anywhere)
 """
 import html, json, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-LOCKED = {'mom/2026-07-31/', 'mom/2026-08-14/', 'mom/2026-08-21/'}
+LOCKED = set()
 
 
 def read(p):
