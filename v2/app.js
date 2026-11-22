@@ -107,11 +107,15 @@
           b.disabled = true;
           rpc(name, { p_token: ACC.t, p_book_slug: slug, p_date: date }).then(function (x) {
             b.disabled = false;
-            if (x && x.ok) { attCache = null; attPainters.forEach(function (f) { f(); }); return; }
+            if (x && x.ok) {
+              if (name === 'm_check_in') { JUST = slug + '|' + date; setTimeout(function () { if (JUST === slug + '|' + date) JUST = null; }, 2500); }
+              attCache = null; attPainters.forEach(function (f) { f(); }); return;
+            }
             msg.className = 'msg err'; msg.textContent = AERR[x && x.error] || ERR[x && x.error] || ERR.network;
           });
         }
         if (row) {
+          if (JUST === slug + '|' + date) { inkDefs(); add(bar, stampSvg({ book_slug: slug, date: date }, 'drop tiny')); }
           add(bar, h('span', { class: 'ok' }, '✓ ' + dot(date) + ' 모임에 함께했습니다'));
           if (row.undo_ok) { var u = h('button', { class: 'lnk', type: 'button' }, '취소'); u.addEventListener('click', function () { act('m_undo_check_in', u); }); add(bar, u); }
         } else {
@@ -128,6 +132,201 @@
   function latestOpen(b) {
     var ss = (b && b.sessions || []).filter(function (s) { return !s.locked; }).sort(function (x, y) { return x.date < y.date ? 1 : -1; });
     return ss[0] || null;
+  }
+
+  // ---------- 출석 도장판 · 달력 ----------
+  // Built only from m_my_attendance rows (the member's own). Shows stamps for meetings attended;
+  // never marks a missed meeting. Faint dots only on upcoming meeting days (today or later).
+  var JUST = null;   // 'slug|date' of the stamp just checked in — that one drops in once
+  var CARD_N = 10;
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function seedOf(s) { var n = 7; for (var i = 0; i < s.length; i++) n = (n * 31 + s.charCodeAt(i)) % 9973; return n; }
+  function inkDefs() {
+    if (document.getElementById('blk-ink-defs')) return;
+    var d = document.createElement('div');
+    d.id = 'blk-ink-defs'; d.setAttribute('aria-hidden', 'true'); d.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
+    d.innerHTML = '<svg width="0" height="0"><filter id="blk-ink" x="-10%" y="-10%" width="120%" height="120%">' +
+      '<feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="4" result="w"/>' +
+      '<feDisplacementMap in="SourceGraphic" in2="w" scale="2.6" xChannelSelector="R" yChannelSelector="G" result="d"/>' +
+      '<feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="2" seed="9" result="sp"/>' +
+      '<feColorMatrix in="sp" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -2.4 0 0 0 2.05" result="m"/>' +
+      '<feComposite in="d" in2="m" operator="in"/></filter></svg>';
+    document.body.appendChild(d);
+  }
+  function dayLabel(x) {
+    var b = BY[x.book_slug], s = b && b.sessions.filter(function (z) { return z.date === x.date; })[0];
+    var dw = s ? s.day : '일월화수목금토'.charAt(new Date(x.date + 'T00:00:00Z').getUTCDay());
+    return dw + '요';
+  }
+  function sessOf(x) {
+    var b = BY[x.book_slug];
+    return b ? b.sessions.filter(function (z) { return z.date === x.date && !z.locked; })[0] || null : null;
+  }
+  // One round ink stamp (inline SVG). Slight rotation and ink colour come from the date + book, so they stay put.
+  function shortTitle(b) { var t = (b ? b.title : '').replace(/\(.*?\)/g, '').split(/[\s,·:—?!.]+/)[0] || ''; return t.length > 4 ? t.slice(0, 4) : t; }
+  function stampSvg(x, cls, label) {
+    var sd = seedOf(x.book_slug + x.date), rot = (sd % 19) - 9;
+    var ink = ['#b23a2b', '#a9641c', '#9a2f3c'][sd % 3];
+    var b = BY[x.book_slug], title = b ? b.title : x.book_slug;
+    var el = document.createElement('span');
+    el.className = 'stp' + (cls ? ' ' + cls : '');
+    el.setAttribute('role', 'img');
+    el.setAttribute('aria-label', dot(x.date) + ' ' + title + ' 출석 도장');
+    el.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true"><g transform="rotate(' + rot + ' 50 50)" fill="none" stroke="' + ink + '" filter="url(#blk-ink)" opacity=".9">' +
+      '<circle cx="50" cy="50" r="44" stroke-width="5.5"/><circle cx="50" cy="50" r="36" stroke-width="1.8"/>' +
+      '<path d="M30 40c6-3 13-3 20 1 7-4 14-4 20-1v20c-6-3-13-3-20 1-7-4-14-4-20-1z" stroke-width="3.4" stroke-linejoin="round"/>' +
+      '<path d="M50 41v20" stroke-width="2.6"/>' +
+      '<text x="50" y="79" text-anchor="middle" fill="' + ink + '" stroke="none" font-size="13.5" font-weight="800" font-family="Pretendard,Apple SD Gothic Neo,sans-serif" letter-spacing="1">' + esc(label || dayLabel(x)) + '</text>' +
+      '<text x="50" y="30" text-anchor="middle" fill="' + ink + '" stroke="none" font-size="9.5" font-weight="800" font-family="Georgia,serif" letter-spacing="1.2">BooKLove</text>' +
+      '</g></svg>';
+    return el;
+  }
+  function sortedAsc(rows) {
+    return rows.slice().sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : String(a.created_at) < String(b.created_at) ? -1 : 1; });
+  }
+  // The café-style card: 10 slots, current card in front, full cards stacked behind (count shown).
+  function stampCard(rows, mini) {
+    var all = sortedAsc(rows), n = all.length;
+    var full = Math.floor(n / CARD_N), cur = n % CARD_N;
+    var justFilled = n > 0 && cur === 0;            // the newest stamp filled a card: show that card + the line
+    var front = justFilled ? all.slice(n - CARD_N) : all.slice(n - cur);
+    var behind = justFilled ? full - 1 : full;
+    var no = justFilled ? full : full + 1;
+    var card = h('div', { class: 'scard' + (mini ? ' mini' : '') + (behind > 0 ? ' stacked' + (behind > 1 ? ' s2' : '') : '') });
+    add(card, h('div', { class: 'shd' }, h('b', null, 'BooKLove 출석 도장판'), h('span', null, no + '번째 장')));
+    var grid = h('div', { class: 'sgrid' });
+    for (var i = 0; i < CARD_N; i++) {
+      var x = front[i];
+      if (x) {
+        var key = x.book_slug + '|' + x.date;
+        var s = stampSvg(x, key === JUST ? 'drop' : '');
+        var sess = sessOf(x);
+        add(grid, h('a', { class: 'slot on', href: sess ? BASE + sess.href : '#/book/' + x.book_slug, title: (BY[x.book_slug] ? BY[x.book_slug].title : x.book_slug) + ' · ' + dot(x.date) },
+          s, h('span', { class: 'sd' }, x.date.slice(5).replace('-', '.'))));
+      } else add(grid, h('span', { class: 'slot' }, h('span', { class: 'ring', 'aria-hidden': 'true' }, String(i + 1))));
+    }
+    add(card, grid);
+    if (justFilled) add(card, h('p', { class: 'sfull' }, '도장판 한 장을 채웠습니다. 함께 읽어 주셔서 고맙습니다.', mini ? null : h('small', null, '다음 출석부터 새 도장판이 시작됩니다.')));
+    var foot = behind > 0 ? '채운 도장판 ' + behind + '장' : '';
+    if (foot) add(card, h('p', { class: 'sstack' }, foot));
+    return card;
+  }
+  function yearLine(rows) {
+    var y = kstToday().slice(0, 4);
+    var n = rows.filter(function (x) { return String(x.date).slice(0, 4) === y; }).length;
+    return h('p', { class: 'secline' }, n ? '올해 ' + n + '번 함께했습니다.' : '올해는 아직 출석 기록이 없습니다.');
+  }
+  // Weekdays the club meets, from config currentBooks (nextMeeting 「매주 수요일 …」 or group 「수요 오전」).
+  function meetDays() {
+    var out = {};
+    (CFG.currentBooks || (CFG.currentBook ? [CFG.currentBook] : [])).forEach(function (c) {
+      var m = /([일월화수목금토])요일/.exec(c.nextMeeting || '') || /([수금])/.exec(c.group || '');
+      if (m) out[DOW[m[1]]] = c.group || (m[1] + '요');
+    });
+    return out;
+  }
+  var CAL = null;   // { y, m } — month shown, kept while the screen repaints
+  function calendar(rows) {
+    var today = kstToday(), md = meetDays();
+    var byDay = {}, last = '';
+    rows.forEach(function (x) { (byDay[x.date] = byDay[x.date] || []).push(x); if (x.date > last) last = x.date; });
+    var dm = last || today;   // default month: the latest month with attendance, else this month
+    if (!CAL) CAL = { y: +dm.slice(0, 4), m: +dm.slice(5, 7) - 1 };
+    var all = allSessions(), first = all.length ? all[all.length - 1].s.date : today;
+    rows.forEach(function (x) { if (x.date < first) first = x.date; });
+    var minI = +first.slice(0, 4) * 12 + (+first.slice(5, 7) - 1), maxI = +today.slice(0, 4) * 12 + (+today.slice(5, 7) - 1) + 3;
+    var box = h('div', { class: 'cal' });
+    var title = h('b', { class: 'cm', 'aria-live': 'polite' });
+    var prev = h('button', { class: 'cnav', type: 'button', 'aria-label': '이전 달' }, '‹');
+    var next = h('button', { class: 'cnav', type: 'button', 'aria-label': '다음 달' }, '›');
+    var head = h('div', { class: 'chd' }, prev, title, next);
+    var grid = h('div', { class: 'cgrid' });
+    var closeSheet = function () { };
+    var legend = Object.keys(md).length ? h('p', { class: 'clg' }, h('span', { class: 'cdot', 'aria-hidden': 'true' }), '다가오는 모임 날 (' + Object.keys(md).map(function (k) { return md[k]; }).join(' · ') + ')') : null;
+    add(box, [head, h('div', { class: 'cwk', 'aria-hidden': 'true' }, ['일', '월', '화', '수', '목', '금', '토'].map(function (w, i) { return h('span', { class: i === 0 ? 'sun' : '' }, w); })), grid, legend]);
+    function show(day, from) {
+      closeSheet();
+      var list = byDay[day] || [];
+      var sh = h('div', { class: 'csheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': dot(day) + ' 출석' });
+      var close = h('button', { class: 'cx', type: 'button', 'aria-label': '닫기' }, '×');
+      add(sh, h('div', { class: 'csh' }, h('b', null, dot(day) + ' (' + (list[0] ? dayLabel(list[0]).charAt(0) : '') + ')'), close));
+      list.forEach(function (x) {
+        var b = BY[x.book_slug], s = sessOf(x);
+        add(sh, h('div', { class: 'cone' }, b ? cover(b) : null,
+          h('div', null, h('div', { class: 't' }, b ? b.title : x.book_slug),
+            h('div', { class: 'd' }, (s ? s.round + '회 · ' : '') + dot(day) + ' 모임에 함께했습니다'),
+            h('a', { class: 'btn sm', href: s ? BASE + s.href : '#/book/' + x.book_slug }, s ? '그날 기록 읽기' : '책 보기'))));
+      });
+      var bg = h('div', { class: 'cback' });
+      function done() { closeSheet(); if (from) from.focus(); }
+      close.addEventListener('click', done); bg.addEventListener('click', done);
+      document.addEventListener('keydown', escKey);
+      function escKey(e) { if (e.key === 'Escape') done(); }
+      closeSheet = function () { document.removeEventListener('keydown', escKey); if (bg.parentNode) bg.remove(); if (sh.parentNode) sh.remove(); closeSheet = function () { }; };
+      document.body.appendChild(bg); document.body.appendChild(sh); close.focus();
+    }
+    function draw() {
+      var y = CAL.y, m = CAL.m, idx = y * 12 + m;
+      title.textContent = y + '년 ' + (m + 1) + '월';
+      prev.disabled = idx <= minI; next.disabled = idx >= maxI;
+      grid.textContent = '';
+      var start = new Date(Date.UTC(y, m, 1)).getUTCDay(), days = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+      for (var i = 0; i < start; i++) add(grid, h('span', { class: 'cd pad' }));
+      for (var d = 1; d <= days; d++) {
+        var ds = y + '-' + ('0' + (m + 1)).slice(-2) + '-' + ('0' + d).slice(-2), wd = (start + d - 1) % 7;
+        var hit = byDay[ds], cls = 'cd' + (ds === today ? ' today' : '') + (wd === 0 ? ' sun' : '');
+        if (hit) {
+          var x = hit[0], key = x.book_slug + '|' + x.date, bk = BY[x.book_slug];
+          var face = bk && bk.cover ? h('img', { class: 'ccv', src: BASE + bk.cover, alt: '', loading: 'lazy' })
+            : h('span', { class: 'cfb' }, stampSvg(x, '', shortTitle(bk) || '출석'));
+          var bt = h('button', { class: cls + ' hit', type: 'button', 'aria-label': dot(ds) + ' ' + hit.map(function (z) { return BY[z.book_slug] ? BY[z.book_slug].title : z.book_slug; }).join(', ') + ' 출석' },
+            face, h('span', { class: 'n' }, String(d)), bk && bk.cover ? stampSvg(x, 'mark' + (key === JUST ? ' drop' : '')) : null);
+          bt.addEventListener('click', (function (dd, el) { return function () { show(dd, el); }; })(ds, bt));
+          add(grid, bt);
+        } else {
+          var up = ds >= today && md.hasOwnProperty(wd);
+          add(grid, h('span', { class: cls }, h('span', { class: 'n' }, String(d)), up ? h('span', { class: 'cdot', 'aria-hidden': 'true' }) : null));
+        }
+      }
+    }
+    function move(k) {
+      var idx = CAL.y * 12 + CAL.m + k;
+      if (idx < minI || idx > maxI) return;
+      CAL = { y: Math.floor(idx / 12), m: idx % 12 }; draw();
+    }
+    prev.addEventListener('click', function () { move(-1); });
+    next.addEventListener('click', function () { move(1); });
+    var tx = null, ty = null;
+    grid.addEventListener('touchstart', function (e) { var t = e.touches[0]; tx = t.clientX; ty = t.clientY; }, { passive: true });
+    grid.addEventListener('touchend', function (e) {
+      if (tx == null) return;
+      var t = e.changedTouches[0], dx = t.clientX - tx, dy = t.clientY - ty; tx = null;
+      if (Math.abs(dx) > 50 && Math.abs(dy) < 40) move(dx < 0 ? 1 : -1);
+    }, { passive: true });
+    draw();
+    return box;
+  }
+  // A box that (re)draws from the member's attendance; hidden when logged out or the RPC is unavailable.
+  function stampBox(mini) {
+    var box = h('div', { class: 'stampbox' + (mini ? ' home' : '') }); box.hidden = true;
+    if (!ACC || !LIVE) return box;
+    function paint() {
+      myAtt().then(function (r) {
+        box.textContent = '';
+        if (!r || !r.ok) { box.hidden = true; return; }
+        inkDefs();
+        var rows = (r.rows || []).map(function (x) { return { book_slug: x.book_slug, date: String(x.date).slice(0, 10), created_at: x.created_at, undo_ok: x.undo_ok }; });
+        if (mini) {
+          add(box, h('div', { class: 'shome' }, h('div', { class: 'shl' }, h('b', null, '내 도장판'), yearLine(rows)), stampCard(rows, true),
+            h('a', { class: 'more', href: '#/account' }, '도장판과 달력 보기 →')));
+        } else {
+          add(box, [yearLine(rows), calendar(rows), h('h3', { class: 'sub3' }, '도장판'), stampCard(rows, false)]);
+        }
+        box.hidden = false;
+      });
+    }
+    attPainters.push(paint); paint();
+    return box;
   }
 
   function revCard(r, withBook, short) {
@@ -187,6 +386,7 @@
           last ? attendBar(c.slug, last.date) : null);
       })));
     }
+    if (ACC) add(root, stampBox(true));
 
     var open = allSessions().filter(function (x) { return !x.s.locked; });
     var top = open[0];
@@ -422,14 +622,7 @@
       attBox.textContent = '';
       if (r && r.error === 'missing') { add(attBox, h('p', { class: 'empty' }, '출석체크는 준비 중입니다.')); return; }
       if (!r || !r.ok) { add(attBox, h('p', { class: 'empty' }, ERR[r && r.error] || ERR.network)); return; }
-      var rows = r.rows || [], y = kstToday().slice(0, 4);
-      var n = rows.filter(function (x) { return String(x.date).slice(0, 4) === y; }).length;
-      add(attBox, h('p', { class: 'secline' }, n ? '올해 ' + n + '번 함께했습니다.' : '올해는 아직 출석 기록이 없습니다.'));
-      if (rows.length) add(attBox, h('div', { class: 'rows' }, rows.map(function (x) {
-        var b = BY[x.book_slug], s = b && b.sessions.filter(function (z) { return z.date === x.date && !z.locked; })[0];
-        return h('a', { class: 'row nocv', href: s ? BASE + s.href : '#/book/' + x.book_slug },
-          h('div', null, h('div', { class: 't' }, b ? b.title : x.book_slug), h('div', { class: 'd' }, dot(String(x.date)) + (s ? ' · ' + s.round + '회 기록 →' : ''))));
-      })));
+      add(attBox, stampBox(false));
     });
     reviews().then(function (rows) {
       revBox.textContent = '';
@@ -488,6 +681,7 @@
   function route() {
     var parts = location.hash.replace(/^#\/?/, '').split('/').map(function (x) { try { return decodeURIComponent(x); } catch (e) { return x; } });
     var root = document.getElementById('app'); root.textContent = ''; attPainters = [];
+    [].forEach.call(document.querySelectorAll('.csheet,.cback'), function (e) { e.remove(); });
     var tab = parts[0] === 'library' || parts[0] === 'book' ? 'library' : parts[0] === 'reviews' ? 'reviews' : parts[0] === 'account' ? 'account' : 'home';
     [].forEach.call(document.querySelectorAll('[data-tab]'), function (a) { a.classList.toggle('on', a.getAttribute('data-tab') === tab); });
     if (parts[0] === 'library') viewLibrary(root, parts[1] === 'date');
