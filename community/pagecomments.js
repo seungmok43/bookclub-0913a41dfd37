@@ -123,11 +123,12 @@
     if (!(dd >= -1 && dd <= 60)) return;
     document.head.appendChild(h('style', null, '.blk-att{margin:22px auto 0;max-width:680px;padding:12px 14px;border:1px solid rgba(128,128,128,.28);border-radius:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:.92rem}' +
       '.blk-att .btn{border:0;border-radius:10px;background:#8C2F39;color:#fff;font-weight:700;padding:9px 16px;font-size:.92rem;cursor:pointer}.blk-att .btn:disabled{opacity:.5}' +
-      '.blk-att .lnk{background:none;border:0;padding:0;color:#8C2F39;font-size:.82rem;cursor:pointer;text-decoration:underline}.blk-att .msg{font-size:.85rem;color:#8C2F39}'));
+      '.blk-att .lnk{background:none;border:0;padding:0;color:#8C2F39;font-size:.82rem;cursor:pointer;text-decoration:underline}.blk-att .msg{font-size:.85rem;color:#8C2F39}' +
+      '.blk-att .host{flex-basis:100%}.blk-att .hl{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px 12px;margin-top:8px}.blk-att .hl label{display:flex;gap:6px;align-items:center;font-size:.92rem}.blk-att .hl input{width:18px;height:18px}'));
     var bar = h('section', { class: 'blk-att', 'aria-label': '출석' });
     bar.hidden = true;
     host.insertBefore(bar, box);
-    var AERR = { rate_limited: ERR.rate_limited, login_required: ERR.login_required, invalid_input: '이 모임은 지금 출석할 수 없습니다.', too_late: '출석 취소는 출석한 날에만 할 수 있습니다.' };
+    var AERR = { rate_limited: ERR.rate_limited, login_required: ERR.login_required, invalid_input: '이 모임은 지금 출석할 수 없습니다.', too_late: '출석 취소는 출석한 날에만 할 수 있습니다.', not_host: '진행자 계정만 출석을 관리할 수 있습니다.' };
     function paint() {
       rpc('m_my_attendance', { p_token: me.t }).then(function (r) {
         bar.textContent = '';
@@ -151,8 +152,35 @@
           bar.appendChild(h('span', null, '이 모임에 함께하셨나요?')); bar.appendChild(b);
         }
         bar.appendChild(msg);
+        if (r.is_host) bar.appendChild(hostBox());
         bar.hidden = false;
       });
+    }
+    // Host (진행자·반장, members.is_host): mark members present for this meeting. Names + checkboxes only.
+    function hostBox() {
+      var wrap = h('div', { class: 'host' });
+      var open = h('button', { class: 'lnk', type: 'button' }, '출석 관리 (진행자)');
+      var list = h('div', { class: 'hl' }), hm = h('div', { class: 'msg', role: 'status' });
+      wrap.appendChild(open); wrap.appendChild(list); wrap.appendChild(hm);
+      function load() {
+        rpc('m_host_roster', { p_token: me.t, p_book_slug: slug, p_date: date }).then(function (x) {
+          list.textContent = '';
+          if (!x || !x.ok) { hm.textContent = AERR[(x && x.error)] || ERR.network; return; }
+          (x.rows || []).forEach(function (m) {
+            var cb = h('input', { type: 'checkbox' }); cb.checked = !!m.present;
+            cb.addEventListener('change', function () {
+              cb.disabled = true; hm.textContent = '';
+              rpc('m_host_mark', { p_token: me.t, p_member: m.id, p_book_slug: slug, p_date: date, p_present: cb.checked }).then(function (y) {
+                cb.disabled = false;
+                if (!(y && y.ok)) { cb.checked = !cb.checked; hm.textContent = AERR[(y && y.error)] || ERR.network; }
+              });
+            });
+            list.appendChild(h('label', null, cb, ' ' + m.name));
+          });
+        });
+      }
+      open.addEventListener('click', function () { open.remove(); load(); });
+      return wrap;
     }
     paint();
   })();
