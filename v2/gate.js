@@ -9,9 +9,22 @@
   'use strict';
   var KEY = 'blk_acct';
   function acct() { try { var a = JSON.parse(localStorage.getItem(KEY)); return a && a.t && a.id ? a : null; } catch (e) { return null; } }
-  if (acct()) return;
-
   var me = document.currentScript, ROOT = me ? me.src.replace(/v2\/gate\.js(\?.*)?$/, '') : '/';
+
+  // Home-screen app (PWA): every page links the one manifest and registers the one service worker (sw.js
+  // at the site root). The worker never caches Supabase calls or anything carrying the login token.
+  (function () {
+    var hd = document.head;
+    if (hd && !hd.querySelector('link[rel="manifest"]')) {
+      var ln = document.createElement('link'); ln.rel = 'manifest'; ln.href = ROOT + 'manifest.webmanifest'; hd.appendChild(ln);
+      var ai = document.createElement('link'); ai.rel = 'apple-touch-icon'; ai.href = ROOT + 'assets/icons/apple-touch-icon.png'; hd.appendChild(ai);
+    }
+    if ('serviceWorker' in navigator && window.isSecureContext) {
+      window.addEventListener('load', function () { navigator.serviceWorker.register(ROOT + 'sw.js', { scope: ROOT }).catch(function () { }); });
+    }
+  })();
+
+  if (acct()) return;
   var de = document.documentElement;
   de.classList.add('blk-gate');
   var css = 'html.blk-gate body>*:not(#blk-gate){display:none!important}' +

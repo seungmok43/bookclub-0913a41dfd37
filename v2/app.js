@@ -135,6 +135,52 @@
     return ss[0] || null;
   }
 
+
+  // ---------- 홈 화면에 추가 (install hint) ----------
+  // Members on a phone browser, not yet installed, not dismissed. Android/Chrome: one button that opens the
+  // browser's own install prompt (beforeinstallprompt). iPhone/iPad: a two-step picture (공유 → 홈 화면에 추가).
+  var BIP = null, hintPainters = [], HINT_KEY = 'blk_pwa_hint';
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); BIP = e; hintPainters.forEach(function (f) { f(); }); });
+  window.addEventListener('appinstalled', function () { BIP = null; lset(HINT_KEY, '1'); hintPainters.forEach(function (f) { f(); }); });
+  function standalone() { try { return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; } catch (e) { return false; } }
+  function isIOS() { var u = navigator.userAgent || ''; return /iPhone|iPad|iPod/.test(u) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
+  function isPhone() { try { return isIOS() || /Android/i.test(navigator.userAgent) || window.matchMedia('(pointer: coarse)').matches; } catch (e) { return false; } }
+  var IC_SHARE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="m7.5 7.5 4.5-4.5 4.5 4.5"/><path d="M8 10H6a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1h-2"/></svg>';
+  var IC_ADD = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M12 8v8M8 12h8"/></svg>';
+  function icon(svg) { var sp = h('span', { class: 'ih-ic' }); sp.innerHTML = svg; return sp; }
+  function installHint() {
+    var box = h('div', { class: 'ihint-box' }); box.hidden = true;
+    function paint() {
+      box.textContent = ''; box.hidden = true;
+      if (!ACC || standalone() || lget(HINT_KEY) || !isPhone()) return;
+      var ios = isIOS();
+      if (!ios && !BIP) return;                       // nothing we can offer on this browser (yet)
+      var x = h('button', { class: 'ih-x', type: 'button', 'aria-label': '다음에 보기' }, '×');
+      x.addEventListener('click', function () { lset(HINT_KEY, '1'); hintPainters.forEach(function (f) { f(); }); });
+      var body;
+      if (ios) {
+        body = h('ol', { class: 'ih-steps' },
+          h('li', null, h('span', { class: 'ih-n' }, '1'), icon(IC_SHARE), h('span', null, '화면 아래 ', h('b', null, '공유'), ' 버튼을 누르고')),
+          h('li', null, h('span', { class: 'ih-n' }, '2'), icon(IC_ADD), h('span', null, h('b', null, '홈 화면에 추가'), '를 누르세요')));
+      } else {
+        var b = h('button', { class: 'btn sm', type: 'button' }, '홈 화면에 추가');
+        b.addEventListener('click', function () {
+          var ev = BIP; if (!ev) return;
+          BIP = null; ev.prompt();
+          (ev.userChoice || Promise.resolve({})).then(function (c) { if (c && c.outcome === 'accepted') lset(HINT_KEY, '1'); hintPainters.forEach(function (f) { f(); }); });
+        });
+        body = h('div', { class: 'ih-go' }, b);
+      }
+      add(box, h('section', { class: 'ihint', 'aria-label': '홈 화면에 추가' },
+        h('div', { class: 'ih-hd' }, h('img', { class: 'ih-app', src: BASE + 'assets/icons/icon-192.png', alt: '', width: '44', height: '44' }),
+          h('div', null, h('b', null, '북클러버를 홈 화면에'), h('span', null, '앱처럼 한 번에 열립니다.')), x),
+        body));
+      box.hidden = false;
+    }
+    hintPainters.push(paint); paint();
+    return box;
+  }
+
   // ---------- 출석 도장판 · 달력 ----------
   // Built only from m_my_attendance rows (the member's own). Shows stamps for meetings attended;
   // never marks a missed meeting. Faint dots only on upcoming meeting days (today or later).
@@ -437,7 +483,7 @@
           last ? attendBar(c.slug, last.date) : null);
       })));
     }
-    if (ACC) add(root, stampBox(true));
+    if (ACC) add(root, [installHint(), stampBox(true)]);
 
     var open = allSessions().filter(function (x) { return !x.s.locked; });
     var top = open[0];
@@ -654,6 +700,7 @@
         rpc('logout', { p_token: ACC.t }).then(function () { setAcc(null); location.hash = '#/'; location.reload(); });
       });
       add(root, [h('p', { class: 'sub' }, h('b', null, ACC.name), ' 이름으로 로그인되어 있습니다. 이 기기에서 로그아웃할 때까지 유지됩니다.'), b, m]);
+      add(root, installHint());
       myAccount(root);
       return;
     }
@@ -727,7 +774,7 @@
   // ---------- router ----------
   function route() {
     var parts = location.hash.replace(/^#\/?/, '').split('/').map(function (x) { try { return decodeURIComponent(x); } catch (e) { return x; } });
-    var root = document.getElementById('app'); root.textContent = ''; attPainters = [];
+    var root = document.getElementById('app'); root.textContent = ''; attPainters = []; hintPainters = [];
     closeSheet();
     var tab = parts[0] === 'library' || parts[0] === 'book' ? 'library' : parts[0] === 'reviews' ? 'reviews' : parts[0] === 'account' ? 'account' : 'home';
     [].forEach.call(document.querySelectorAll('[data-tab]'), function (a) { a.classList.toggle('on', a.getAttribute('data-tab') === tab); });
