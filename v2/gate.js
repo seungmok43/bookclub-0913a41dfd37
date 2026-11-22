@@ -11,6 +11,16 @@
   function acct() { try { var a = JSON.parse(localStorage.getItem(KEY)); return a && a.t && a.id ? a : null; } catch (e) { return null; } }
   var me = document.currentScript, ROOT = me ? me.src.replace(/v2\/gate\.js(\?.*)?$/, '') : '/';
 
+  // Heading font (Nanum Myeongjo, Google Fonts) on every page — many pages name the family but never loaded it.
+  (function () {
+    var hd = document.head;
+    if (!hd || hd.querySelector('link[href*="fonts.googleapis.com/css2?family=Nanum+Myeongjo"]')) return;
+    [['preconnect', 'https://fonts.googleapis.com'], ['preconnect', 'https://fonts.gstatic.com', 1],
+     ['stylesheet', 'https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap']].forEach(function (x) {
+      var l = document.createElement('link'); l.rel = x[0]; l.href = x[1]; if (x[2]) l.crossOrigin = ''; hd.appendChild(l);
+    });
+  })();
+
   // Home-screen app (PWA): every page links the one manifest and registers the one service worker (sw.js
   // at the site root). The worker never caches Supabase calls or anything carrying the login token.
   (function () {
