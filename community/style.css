@@ -140,3 +140,10 @@ select.sel{width:100%;padding:10px 12px;border:1px solid var(--line);border-radi
 .join-head{display:grid;gap:2px;margin-bottom:4px}
 .join-head b{font-size:1.02rem;color:var(--garnet)}
 .join-head span{font-size:.82rem;color:var(--mute);font-weight:400}
+
+/* 2026-11-22 v2 pass: 13px text floor and 44px tap targets */
+.eyebrow,.foot,.h2 small,.sec>h2 small,.badge,.now .lbl,.quick span,.ph,.bk .a,.bk .m,.fm label span.hint,.note,.item .meta,.item .book,.res .d,.res .r,.yr{font-size:13px}
+.btn,.hub,.brand,.now .acts .btn,.bhead .acts .btn{min-height:44px}
+.btn,.now .acts .btn,.bhead .acts .btn{display:inline-flex;align-items:center;justify-content:center}
+.hub{display:inline-flex;align-items:center}
+.brand{justify-content:center}

@@ -158,44 +158,63 @@
   }
 
   // ---------- screens ----------
+  // Next meeting date for a 'currentBooks' entry: the coming 수/금 (today counts), Korea time.
+  var DOW = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
+  function nextMeet(c) {
+    var m = /([일월화수목금토])요일\s*(.*)$/.exec(c.nextMeeting || '') || /([수금])/.exec(c.group || '');
+    if (!m) return null;
+    var today = new Date(kstToday() + 'T00:00:00Z'), add = (DOW[m[1]] - today.getUTCDay() + 7) % 7;
+    var d = new Date(today.getTime() + add * 864e5).toISOString().slice(0, 10);
+    return { date: d, day: m[1], time: (m[2] || '').trim() };
+  }
   function viewHome(root) {
-    var open = allSessions().filter(function (x) { return !x.s.locked; });
-    var top = open[0];
-    if (top) add(root, h('section', { class: 'hero' }, cover(top.b),
-      h('div', null, h('div', { class: 'eb' }, '이번 주 기록'), h('h2', null, top.b.title),
-        h('div', { class: 'when' }, dot(top.s.date) + ' (' + top.s.day + ') · ' + top.s.round + '회')),
-      h('p', { class: 'hook' }, top.s.hook),
-      h('div', { class: 'go' }, h('a', { class: 'btn', href: BASE + top.s.href }, '읽기')),
-      h('div', { class: 'go' }, attendBar(top.b.slug, top.s.date))));
-
     var cbs = CFG.currentBooks || (CFG.currentBook ? [CFG.currentBook] : []);
     if (cbs.length) {
-      add(root, h('h2', { class: 'sec' }, '지금 읽는 책'));
-      add(root, h('div', { class: 'now' }, cbs.map(function (c) {
+      add(root, h('h2', { class: 'sec first' }, '이번 주 모임'));
+      add(root, h('div', { class: 'week' }, cbs.map(function (c) {
         var b = BY[c.slug] || { slug: c.slug, title: c.title, author: c.author, cover: (c.cover || ''), tone: '' };
         var fri = /금/.test(c.group || '');
+        var nm = nextMeet(c);
         var last = latestOpen(BY[c.slug]);
         return h('div', { class: 'nowi' }, h('a', { class: 'nowc', href: '#/book/' + c.slug }, cover(b),
           h('div', null, h('span', { class: 'g ' + (fri ? 'f' : 'w') }, c.group || ''), h('b', null, c.title || b.title),
-            h('span', { class: 'm' }, c.author || b.author), c.nextMeeting ? h('span', { class: 'm' }, '다음 모임 · ' + c.nextMeeting) : null)),
+            h('span', { class: 'm' }, c.author || b.author),
+            nm ? h('span', { class: 'when' }, dot(nm.date) + ' (' + nm.day + ')' + (nm.time ? ' ' + nm.time : '')) : (c.nextMeeting ? h('span', { class: 'when' }, c.nextMeeting) : null),
+            c.place ? h('span', { class: 'pl' }, '장소 · ' + c.place) : null)),
           last ? attendBar(c.slug, last.date) : null);
       })));
     }
 
-    if ((GR.groups || []).length) add(root, h('h2', { class: 'sec' }, '삶의 질문으로 고르기'));
-    (GR.groups || []).forEach(function (g) {
+    var open = allSessions().filter(function (x) { return !x.s.locked; });
+    var top = open[0];
+    if (top) add(root, h('section', { class: 'hero' }, cover(top.b),
+      h('div', null, h('div', { class: 'eb' }, '최근 기록'), h('h2', null, top.b.title),
+        h('div', { class: 'when' }, dot(top.s.date) + ' (' + top.s.day + ') · ' + top.s.round + '회')),
+      h('p', { class: 'hook' }, top.s.hook),
+      h('div', { class: 'go' }, h('a', { class: 'btn', href: BASE + top.s.href }, '읽기')),
+      cbs.some(function (c) { return c.slug === top.b.slug; }) ? null : h('div', { class: 'go' }, attendBar(top.b.slug, top.s.date))));
+
+    var groups = (GR.groups || []).filter(function (g) { return (g.slugs || []).some(function (s) { return BY[s]; }); });
+    if (groups.length) add(root, h('h2', { class: 'sec' }, '삶의 질문으로 고르기'));
+    var SHOW = 2, gbox = h('div');
+    add(root, gbox);
+    function groupBox(g) {
       var list = (g.slugs || []).map(function (s) { return BY[s]; }).filter(Boolean);
-      if (!list.length) return;
-      var rows = h('div', { class: 'rows' }, list.slice(0, 4).map(bookRow));
-      var box = h('section', { class: 'grp' }, h('h3', null, g.q, GR.draft ? h('span', { class: 'tag' }, '초안') : null),
-        g.line ? h('p', { class: 'l' }, g.line) : null, rows);
-      if (list.length > 4) {
-        var more = h('button', { class: 'more', type: 'button', style: 'background:none;border:0;cursor:pointer;font:inherit;font-weight:700;color:var(--accent)' }, '더 보기 (' + (list.length - 4) + ')');
-        more.addEventListener('click', function () { list.slice(4).forEach(function (b) { add(rows, bookRow(b)); }); more.remove(); });
+      var rows = h('div', { class: 'rows' }, list.slice(0, 3).map(bookRow));
+      var box = h('section', { class: 'grp' }, h('h3', null, g.q), g.line ? h('p', { class: 'l' }, g.line) : null, rows);
+      if (list.length > 3) {
+        var more = h('button', { class: 'more', type: 'button' }, '책 더 보기 (' + (list.length - 3) + ')');
+        more.addEventListener('click', function () { list.slice(3).forEach(function (b) { add(rows, bookRow(b)); }); more.remove(); });
         add(box, more);
       }
-      add(root, box);
-    });
+      return box;
+    }
+    groups.slice(0, SHOW).forEach(function (g) { add(gbox, groupBox(g)); });
+    if (groups.length > SHOW) {
+      var gm = h('button', { class: 'more', type: 'button' }, '질문 더 보기 (' + (groups.length - SHOW) + ')');
+      gm.addEventListener('click', function () { groups.slice(SHOW).forEach(function (g) { add(gbox, groupBox(g)); }); gm.remove(); });
+      add(root, gm);
+    }
 
     // Trust line rule: N = every meeting listed in community/catalog.js (open + locked sessions);
     // M = books that have at least one such session; first year = earliest session date.
@@ -266,7 +285,7 @@
     draw();
   }
 
-  function viewBook(root, slug) {
+  function viewBook(root, slug, write) {
     var b = BY[slug];
     if (!b) { add(root, h('p', { class: 'empty' }, '책을 찾을 수 없습니다.'), h('a', { class: 'more', href: '#/library' }, '함께 읽은 책으로 →')); return; }
     add(root, h('div', { class: 'bhead' }, cover(b), h('div', null, h('h1', null, b.title), h('div', { class: 'a' }, b.author),
@@ -274,11 +293,11 @@
       h('a', { class: 'blink', href: BASE + b.href }, '이 책 정리 페이지 →'))));
     if (b.hook) add(root, h('p', { class: 'bone' }, b.hook));
     var fw = (GR.forWhom || {})[slug];
-    if (fw) add(root, h('div', { class: 'who' }, h('b', null, '이런 분께 '), fw, GR.draft ? h('span', { class: 'tag' }, '초안') : null));
+    if (fw) add(root, h('div', { class: 'who' }, h('b', null, '이런 분께 '), fw));
 
     add(root, h('h2', { class: 'sec' }, '모임 기록'));
     if (!b.sessions.length) add(root, h('p', { class: 'empty' }, '이 책은 회차별 기록 대신 정리 페이지 한 곳에 모여 있습니다.'));
-    else add(root, h('div', { class: 'rows' }, b.sessions.slice().sort(function (x, y) { return x.date < y.date ? -1 : 1; })
+    else add(root, h('div', { class: 'rows' }, b.sessions.slice().sort(function (x, y) { return x.date < y.date ? 1 : -1; })
       .map(function (s) { return sessionRow({ b: b, s: s }, false); })));
 
     var head = h('h2', { class: 'sec' }, '서평');
@@ -304,6 +323,7 @@
       if (ACC) showForm(); else { writeBox.textContent = ''; add(writeBox, h('p', { class: 'secline' }, '서평은 로그인한 멤버만 남길 수 있습니다. 처음이면 이름과 비밀번호를 정해 한 번만 가입하면 됩니다.')); add(writeBox, accountForms(showForm)); }
     });
     load();
+    if (write) { wbtn.click(); setTimeout(function () { head.scrollIntoView(); }, 0); }
   }
 
   function run(btn, msg, check, send, done) {
@@ -321,9 +341,9 @@
   function reviewForm(b, done) {
     var rating = 0;
     var btns = [1, 2, 3, 4, 5].map(function (n) {
-      return h('button', { type: 'button', 'aria-label': n + '점', onclick: function () { rating = n; paint(); } }, '★');
+      return h('button', { type: 'button', 'aria-label': n + '점', 'aria-pressed': 'false', onclick: function () { rating = n; paint(); } }, '☆');
     });
-    function paint() { btns.forEach(function (x, i) { x.className = i < rating ? 'on' : ''; }); }
+    function paint() { btns.forEach(function (x, i) { var on = i < rating; x.className = on ? 'on' : ''; x.textContent = on ? '★' : '☆'; x.setAttribute('aria-pressed', on ? 'true' : 'false'); }); }
     var one = h('input', { maxlength: '100', placeholder: '이 책을 한 줄로 말한다면' });
     var body = h('textarea', { maxlength: '3000', placeholder: '조금 더 길게 남기고 싶다면 (선택)' });
     var msg = h('div', { class: 'msg', role: 'status' });
@@ -432,12 +452,27 @@
     var tab = parts[0] === 'library' || parts[0] === 'book' ? 'library' : parts[0] === 'reviews' ? 'reviews' : parts[0] === 'account' ? 'account' : 'home';
     [].forEach.call(document.querySelectorAll('[data-tab]'), function (a) { a.classList.toggle('on', a.getAttribute('data-tab') === tab); });
     if (parts[0] === 'library') viewLibrary(root, parts[1] === 'date');
-    else if (parts[0] === 'book') viewBook(root, parts[1]);
+    else if (parts[0] === 'book') viewBook(root, parts[1], parts[2] === 'write');
     else if (parts[0] === 'reviews') viewReviews(root);
     else if (parts[0] === 'account') viewAccount(root);
     else viewHome(root);
-    window.scrollTo(0, 0);
+    if (!(parts[0] === 'book' && parts[2] === 'write')) window.scrollTo(0, 0);
   }
+  var FS = [1, 1.125, 1.25, 1.375];
+  function fsGet() { var v = parseFloat(lget('blk_fs')); return FS.indexOf(v) >= 0 ? v : 1; }
+  function fsApply() {
+    var v = fsGet(), i = FS.indexOf(v);
+    document.documentElement.style.fontSize = v === 1 ? '' : (v * 100) + '%';
+    [].forEach.call(document.querySelectorAll('[data-fs]'), function (b) { b.disabled = +b.getAttribute('data-fs') < 0 ? i <= 0 : i >= FS.length - 1; });
+  }
+  [].forEach.call(document.querySelectorAll('[data-fs]'), function (b) {
+    b.addEventListener('click', function () {
+      var i = FS.indexOf(fsGet()) + (+b.getAttribute('data-fs'));
+      if (i < 0 || i >= FS.length) return;
+      lset('blk_fs', FS[i] === 1 ? '' : String(FS[i])); fsApply();
+    });
+  });
+  fsApply();
   window.addEventListener('hashchange', route);
   route();
 })();
