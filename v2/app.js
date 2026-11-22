@@ -115,7 +115,7 @@
           });
         }
         if (row) {
-          // Attended: no confirmation line here (cancelling lives in the calendar / 도장판 sheet).
+          // Attended: no confirmation line here (cancelling lives in the calendar day sheet).
           // Right after a check-in, only the stamp moment shows.
           if (JUST !== slug + '|' + date) { bar.hidden = true; return; }
           inkDefs(); add(bar, stampSvg({ book_slug: slug, date: date }, 'drop tiny'));
@@ -181,11 +181,10 @@
     return box;
   }
 
-  // ---------- 출석 도장판 · 달력 ----------
+  // ---------- 출석 달력 ----------
   // Built only from m_my_attendance rows (the member's own). Shows stamps for meetings attended;
   // never marks a missed meeting. Faint dots only on upcoming meeting days (today or later).
   var JUST = null;   // 'slug|date' of the stamp just checked in — that one drops in once
-  var CARD_N = 10;
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function seedOf(s) { var n = 7; for (var i = 0; i < s.length; i++) n = (n * 31 + s.charCodeAt(i)) % 9973; return n; }
   function inkDefs() {
@@ -228,37 +227,6 @@
       '</g></svg>';
     return el;
   }
-  function sortedAsc(rows) {
-    return rows.slice().sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : String(a.created_at) < String(b.created_at) ? -1 : 1; });
-  }
-  // The café-style card: 10 slots, current card in front, full cards stacked behind (count shown).
-  function stampCard(rows, mini) {
-    var all = sortedAsc(rows), n = all.length;
-    var full = Math.floor(n / CARD_N), cur = n % CARD_N;
-    var justFilled = n > 0 && cur === 0;            // the newest stamp filled a card: show that card + the line
-    var front = justFilled ? all.slice(n - CARD_N) : all.slice(n - cur);
-    var behind = justFilled ? full - 1 : full;
-    var no = justFilled ? full : full + 1;
-    var card = h('div', { class: 'scard' + (mini ? ' mini' : '') + (behind > 0 ? ' stacked' + (behind > 1 ? ' s2' : '') : '') });
-    add(card, h('div', { class: 'shd' }, h('b', null, 'BooKLove 출석 도장판'), h('span', null, no + '번째 장')));
-    var grid = h('div', { class: 'sgrid' });
-    for (var i = 0; i < CARD_N; i++) {
-      var x = front[i];
-      if (x) {
-        var key = x.book_slug + '|' + x.date;
-        var s = stampSvg(x, key === JUST ? 'drop' : '');
-        var sb = h('button', { class: 'slot on', type: 'button', 'data-k': key, 'aria-label': (BY[x.book_slug] ? BY[x.book_slug].title : x.book_slug) + ' · ' + dot(x.date) + ' 출석' },
-          s, h('span', { class: 'sd' }, x.date.slice(5).replace('-', '.')));
-        sb.addEventListener('click', (function (dd, el) { return function () { openSheet(all.filter(function (z) { return z.date === dd; }), el); }; })(x.date, sb));
-        add(grid, sb);
-      } else add(grid, h('span', { class: 'slot' }, h('span', { class: 'ring', 'aria-hidden': 'true' }, String(i + 1))));
-    }
-    add(card, grid);
-    if (justFilled) add(card, h('p', { class: 'sfull' }, '도장판 한 장을 채웠습니다. 함께 읽어 주셔서 고맙습니다.', mini ? null : h('small', null, '다음 출석부터 새 도장판이 시작됩니다.')));
-    var foot = behind > 0 ? '채운 도장판 ' + behind + '장' : '';
-    if (foot) add(card, h('p', { class: 'sstack' }, foot));
-    return card;
-  }
   function yearLine(rows) {
     var y = kstToday().slice(0, 4);
     var n = rows.filter(function (x) { return String(x.date).slice(0, 4) === y; }).length;
@@ -273,7 +241,7 @@
     });
     return out;
   }
-  // Day sheet (from a calendar cover day or a 도장판 stamp): book, N회, date, record link,
+  // Day sheet (from a calendar cover day): book, N회, date, record link,
   // and 「출석 취소」 only while the server allows it (undo_ok, same rule as before), with an inline confirm.
   var closeSheet = function () { };
   function reduceMotion() { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }
@@ -388,8 +356,8 @@
     return box;
   }
   // A box that (re)draws from the member's attendance; hidden when logged out or the RPC is unavailable.
-  function stampBox(mini) {
-    var box = h('div', { class: 'stampbox' + (mini ? ' home' : '') }); box.hidden = true;
+  function stampBox() {
+    var box = h('div', { class: 'stampbox' }); box.hidden = true;
     if (!ACC || !LIVE) return box;
     function paint() {
       myAtt().then(function (r) {
@@ -397,12 +365,7 @@
         if (!r || !r.ok) { box.hidden = true; return; }
         inkDefs();
         var rows = (r.rows || []).map(function (x) { return { book_slug: x.book_slug, date: String(x.date).slice(0, 10), created_at: x.created_at, undo_ok: x.undo_ok }; });
-        if (mini) {
-          add(box, h('div', { class: 'shome' }, h('div', { class: 'shl' }, h('b', null, '내 도장판'), yearLine(rows)), stampCard(rows, true),
-            h('a', { class: 'more', href: '#/account' }, '도장판과 달력 보기 →')));
-        } else {
-          add(box, [yearLine(rows), calendar(rows), h('h3', { class: 'sub3' }, '도장판'), stampCard(rows, false)]);
-        }
+        add(box, [yearLine(rows), calendar(rows)]);
         box.hidden = false;
       });
     }
@@ -484,7 +447,7 @@
           last ? attendBar(c.slug, last.date) : null);
       })));
     }
-    if (ACC) add(root, [installHint(), stampBox(true)]);
+    if (ACC) add(root, installHint());
 
     var open = allSessions().filter(function (x) { return !x.s.locked; });
     var top = open[0];
@@ -717,7 +680,7 @@
       attBox.textContent = '';
       if (r && r.error === 'missing') { add(attBox, h('p', { class: 'empty' }, '출석체크는 준비 중입니다.')); return; }
       if (!r || !r.ok) { add(attBox, h('p', { class: 'empty' }, ERR[r && r.error] || ERR.network)); return; }
-      add(attBox, stampBox(false));
+      add(attBox, stampBox());
     });
     reviews().then(function (rows) {
       revBox.textContent = '';

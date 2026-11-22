@@ -141,32 +141,10 @@ h2.sec.first{margin-top:18px}
 .fsz button:disabled{opacity:.45;cursor:default}
 @media(max-width:560px){.week{grid-template-columns:1fr}}
 
-/* 출석 도장판 · 달력 (cream paper, warm ink; explicit colours so it reads the same in dark mode) */
-.stampbox.home{margin-top:16px}
-.shome{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 14px 6px}
-.shl{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:0 10px}
-.shl b{font-family:var(--serif);font-size:1.0625rem;color:var(--ink)}
-.shl .secline{margin:0 0 8px}
-.scard{position:relative;background:#F8F0DC;color:#3b2f22;border:1px solid #E6D6B5;border-radius:14px;padding:14px 14px 12px;margin:6px 0 14px;
+/* 출석 달력 (warm ink stamps; explicit colours so it reads the same in dark mode) */
  background-image:radial-gradient(rgba(150,110,50,.07) 1px,transparent 1.2px);background-size:7px 7px;box-shadow:0 2px 8px rgba(120,90,40,.10)}
-.scard.stacked{box-shadow:0 2px 8px rgba(120,90,40,.10),5px 5px 0 -1px #EFE3C8,5px 5px 0 0 #E2D0AC}
-.scard.stacked.s2{box-shadow:0 2px 8px rgba(120,90,40,.10),5px 5px 0 -1px #EFE3C8,5px 5px 0 0 #E2D0AC,10px 10px 0 -1px #E9DBBD,10px 10px 0 0 #DCC79F}
-.scard.mini{margin:4px 0 6px}
-.shd{display:flex;justify-content:space-between;align-items:baseline;gap:8px;border-bottom:1px dashed #D9C49C;padding-bottom:8px;margin-bottom:10px}
-.shd b{font-family:var(--serif);font-size:1rem;color:#5a3a1e}
-.shd span{font-size:.8125rem;color:#6d5636;font-weight:700}
-.sgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px 6px}
-.slot{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;min-height:44px;text-decoration:none;color:#6d5636}
-.slot .ring{width:100%;max-width:58px;aspect-ratio:1;border:1.5px dashed #D3BD92;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8125rem;color:#9a8460;font-family:Georgia,serif}
-.slot .stp{width:100%;max-width:58px}
-.slot .sd{font-size:.8125rem;line-height:1.3;margin-top:2px;color:#5f4a2c;font-weight:600}
-.scard.mini .slot .sd{display:none}
 .stp{display:inline-block;aspect-ratio:1;mix-blend-mode:multiply}
 .stp svg{width:100%;height:100%;display:block;overflow:visible}
-.sfull{margin:12px 0 0;text-align:center;font-family:var(--serif);font-size:.9375rem;line-height:1.6;color:#7a2a22;font-weight:700}
-.sfull small{display:block;font-family:var(--sans);font-weight:400;font-size:.8125rem;color:#6d5636}
-.sstack{margin:10px 0 0;font-size:.8125rem;color:#6d5636;text-align:right}
-h3.sub3{font-family:var(--serif);font-size:1.0625rem;margin:22px 0 8px}
 /* the stamp moment */
 .stp.drop{animation:blkStamp .62s cubic-bezier(.25,.7,.3,1) both}
 @keyframes blkStamp{0%{transform:translateY(-34px) scale(1.7);opacity:0}45%{opacity:1}62%{transform:translateY(0) scale(.9)}80%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
@@ -204,7 +182,6 @@ h3.sub3{font-family:var(--serif);font-size:1.0625rem;margin:22px 0 8px}
 .cone{display:grid;grid-template-columns:72px 1fr;gap:14px;align-items:start;padding:8px 0}
 .cone .t{font-family:var(--serif);font-weight:700;font-size:1.0625rem;line-height:1.4}
 .cone .d{font-size:.9375rem;color:var(--muted);margin:2px 0 10px}
-.scard:not(.mini) .slot .stp,.scard:not(.mini) .slot .ring{max-width:50px}
 .cdot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#c9a96a;opacity:.55;margin-top:6px}
 .clg{display:flex;align-items:center;gap:8px;font-size:.8125rem;color:var(--muted);margin:8px 2px 0}
 .clg .cdot{margin:0}
@@ -216,10 +193,9 @@ h3.sub3{font-family:var(--serif);font-size:1.0625rem;margin:22px 0 8px}
 .uq{border:1px solid #d9b3ad;border-radius:22px;background:#fff}
 .uq.yes{background:#9b3a32;border-color:#9b3a32;color:#fff;font-weight:700}
 .uq:disabled{opacity:.5}
-.lift .stp,.lift .ccv,.lift .cfb,.slot.lift .stp{animation:blkLift .42s ease-in forwards}
+.lift .stp,.lift .ccv,.lift .cfb{animation:blkLift .42s ease-in forwards}
 @keyframes blkLift{0%{transform:none;opacity:1}100%{transform:translateY(-26px) scale(1.35) rotate(-6deg);opacity:0}}
 @media (prefers-reduced-motion:reduce){.lift .stp,.lift .ccv,.lift .cfb{animation:none}}
-button.slot{background:none;border:0;padding:0;font:inherit;cursor:pointer}
 /* home opening photo (old library). Fixed height → no layout shift. */
 .lhero{position:relative;width:100vw;margin:-8px 0 0 calc(50% - 50vw);height:62vh;height:62svh;min-height:420px;max-height:560px;overflow:hidden;background:#2a1d12;color:#FBF4E6}
 .lhero picture,.lhero img{position:absolute;inset:0;width:100%;height:100%}
