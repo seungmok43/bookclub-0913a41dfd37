@@ -61,9 +61,37 @@ a.back:hover{color:var(--accent);border-color:var(--accent)}
 @media(max-width:560px){.hero.photo{margin:0 -12px}}
 
 /* 그날의 이야기 — 강조 표시 (2026-11-23): 음영=한 줄 요지 · 굵게=붙들 문장 · 색=낱말 · 밑줄=책·성경 */
-.storybox mark.hl{background:linear-gradient(transparent 55%,#F6DFA4 55%);color:inherit;font-weight:700;padding:0 .08em}
-.storybox b{font-weight:700;color:var(--ink)}
-.storybox .tm{color:var(--accent);font-weight:700}
-.storybox .u{text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:1.5px;text-underline-offset:.22em}
-.storybox .mkey{font-size:.8125rem;color:var(--muted);margin:0 0 1rem;line-height:1.7}
-.storybox .mkey b,.storybox .mkey .tm,.storybox .mkey mark{font-size:inherit}
+mark.pt,.storybox mark.hl{background:linear-gradient(transparent 55%,#F6DFA4 55%);color:inherit;font-weight:700;padding:0 .08em}
+b.k{font-weight:700;color:var(--ink)}
+span.tm{color:var(--accent);font-weight:700}
+span.u{text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:1.5px;text-underline-offset:.22em}
+p.mkey{font-size:.8125rem;color:var(--muted);margin:0 0 1rem;line-height:1.7;font-family:var(--sans);font-weight:400}
+
+/* 읽는 지면 — 큰 제목·넉넉한 행간·인용과 말의 구분 (2026-11-23, 브런치식 글 지면 참고) */
+.hero h1,.head h1{font-size:clamp(2.1rem,6.4vw,3.1rem)!important;line-height:1.28!important;font-weight:800!important;text-wrap:balance}
+.slabel h2{font-size:clamp(1.35rem,4.2vw,1.6rem)}
+.story{counter-reset:tp}
+.storybox{max-width:760px;padding:44px 46px}
+.storybox .topic,.story section.topic{margin-top:3.4rem;padding-top:2.2rem;border-top:1px solid var(--line);counter-increment:tp}
+.storybox .topic h3,.story section.topic h2{font-size:clamp(1.5rem,5vw,1.9rem);line-height:1.42;letter-spacing:-.015em;margin:0 0 1.2rem;color:var(--ink);text-wrap:balance}
+.storybox .topic h3::before,.story section.topic h2::before{content:counter(tp,decimal-leading-zero);display:block;font-family:var(--sans);font-size:.8125rem;font-weight:800;letter-spacing:.16em;color:var(--accent);margin-bottom:.5rem}
+.storybox .topic p,.story section.topic p{font-size:1.125rem;line-height:2}
+.storybox .ovtext,.lede-text{font-size:1.2rem;line-height:2;font-family:var(--serif);color:var(--ink)}
+.storybox .ovtext+.ovtext{border-bottom:0}
+.oneline{margin:2.2rem 0 0;padding:1.6rem 1.5rem;background:var(--surface);border-radius:16px;text-align:center}
+.oneline small,.wrapup small{display:block;font-size:.8125rem;font-weight:800;letter-spacing:.14em;color:var(--accent);margin-bottom:.6rem}
+.oneline p{font-family:var(--serif);font-weight:800;font-size:clamp(1.3rem,4.6vw,1.6rem);line-height:1.6;margin:0;text-wrap:balance}
+blockquote.bq{margin:1.6rem 0;padding:.3rem 0 .3rem 1.2rem;border-left:3px solid var(--accent)}
+blockquote.bq p{font-family:var(--serif);font-weight:700;font-size:1.2rem!important;line-height:1.9!important;margin:0 0 .4rem!important;color:var(--ink)}
+blockquote.bq cite,.keep cite{display:block;font-style:normal;font-size:.875rem;color:var(--muted)}
+p.say{margin:1.2rem 0 1.2rem .2rem!important;padding:.9rem 1.1rem;background:#F7F3EA;border-radius:4px 16px 16px 16px;color:var(--ink)}
+p.say .who{display:block;font-size:.8125rem;font-weight:800;color:var(--muted);margin-bottom:.2rem}
+.wrapup{margin:1.8rem 0 0;padding:1.3rem 1.4rem;border:1.5px solid var(--accent);border-radius:16px;background:#fff}
+.wrapup p{margin:0!important;font-weight:600}
+.keep{margin-top:3.4rem;padding-top:2.2rem;border-top:1px solid var(--line)}
+.keep h3{font-family:var(--serif);font-size:clamp(1.3rem,4.4vw,1.55rem);margin:0 0 1rem;color:var(--ink)}
+.keep ul,.keep ol{margin:0;padding:0;list-style:none;display:grid;gap:.9rem;counter-reset:kq}
+.keep li{font-size:1.125rem;line-height:1.9;padding:1rem 1.2rem;background:var(--surface);border-radius:14px}
+.keep ol li{counter-increment:kq}
+.keep ol li::before{content:"Q" counter(kq);display:block;font-size:.8125rem;font-weight:800;letter-spacing:.1em;color:var(--accent)}
+@media(max-width:560px){.storybox{padding:28px 20px}.storybox .topic,.story section.topic{margin-top:2.8rem;padding-top:1.8rem}}
