@@ -5,7 +5,7 @@
      Authorization / apikey header, and any URL that mentions a token. Those always go to the network.
    - Pages (HTML): network first, cached copy when offline. Other files: cached copy at once, refreshed behind.
    - Bump VERSION to drop old caches (cleaned on activate). */
-var VERSION = 'blk-v4-20261125f';
+var VERSION = 'blk-v4-20261125g';
 var SHELL = [
   './', 'v2/style.css?v=20261122d', 'v2/app.js?v=20261122d', 'v2/data.js', 'v2/groups.js', 'v2/gate.js',
   'v2/session.css', 'v2/session.js', 'v2/toc.js', 'community/config.js', 'community/pagecomments.js',
