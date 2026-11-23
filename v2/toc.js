@@ -28,7 +28,7 @@
     hs.forEach(function (h, i) {
       if (!h.id) h.id = 'toc-' + (i + 1);
       var li = document.createElement('li'); li.className = h.tagName === 'H3' ? 'l3' : 'l2';
-      var a = document.createElement('a'); a.href = '#' + h.id; a.textContent = h.textContent.trim();
+      var a = document.createElement('a'); a.href = '#' + h.id; a.textContent = h.innerHTML.replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
       a.addEventListener('click', function (e) {
         e.preventDefault(); h.scrollIntoView({ behavior: 'smooth', block: 'start' });
         try { history.replaceState(null, '', '#' + h.id); } catch (x) { }
